@@ -19,7 +19,7 @@ import yaml
 
 log = logging.getLogger(__name__)
 
-BATCH_SIZE = 8  # Items per Claude call — balances cost vs. latency
+BATCH_SIZE = 15  # Items per Claude call — balances cost vs. latency
 
 _PROFILE: dict | None = None
 
@@ -157,7 +157,7 @@ def score_items(
 
         try:
             response = client.messages.create(
-                model="claude-opus-4-6",
+                model="claude-haiku-4-5-20251001",
                 max_tokens=2500,
                 system=system_prompt,
                 messages=[{"role": "user", "content": _build_user_prompt(batch, item_type)}],

@@ -22,6 +22,7 @@ import os
 import sys
 from datetime import datetime, timezone
 
+import yaml
 from dotenv import load_dotenv
 
 # Load .env before importing modules that read env vars
@@ -37,6 +38,31 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 log = logging.getLogger(__name__)
+
+
+def _keyword_prefilter(items: list[dict], max_items: int = 60) -> list[dict]:
+    """
+    Rank news items by keyword hits before sending to Claude.
+    Keeps up to max_items most relevant-looking articles, cutting API cost
+    and runtime significantly when RSS feeds return 100+ articles.
+    """
+    with open("company_profile.yaml") as f:
+        profile = yaml.safe_load(f)
+    kw = profile.get("keywords", {})
+    high = [k.lower() for k in kw.get("high_priority", [])]
+    medium = [k.lower() for k in kw.get("medium_priority", [])]
+
+    def _score(item: dict) -> int:
+        text = (item.get("title", "") + " " + item.get("summary", "")).lower()
+        return sum(2 for k in high if k in text) + sum(1 for k in medium if k in text)
+
+    ranked = sorted(items, key=_score, reverse=True)
+    # Always keep items with at least one keyword hit; fill remaining slots from top
+    hits = [i for i in ranked if _score(i) > 0]
+    no_hits = [i for i in ranked if _score(i) == 0]
+    result = (hits + no_hits)[:max_items]
+    log.info("  Keyword pre-filter: %d → %d items", len(items), len(result))
+    return result
 
 
 def _min_score(env_key: str, default: int) -> int:
@@ -68,7 +94,8 @@ def run(dry_run: bool = False) -> None:
 
     # ── 2. Score with Claude ──────────────────────────────────────────────────
     log.info("Step 2/3 — Scoring with Claude AI …")
-    news_scored = score_items(news_raw, item_type="news")
+    news_prefiltered = _keyword_prefilter(news_raw, max_items=60)
+    news_scored = score_items(news_prefiltered, item_type="news")
     opps_scored = score_items(opps_raw, item_type="opportunity")
 
     min_news = _min_score("MIN_NEWS_SCORE", 45)
