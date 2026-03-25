@@ -140,7 +140,7 @@ def score_items(
         return _fallback_scores(items)
 
     profile = _load_profile()
-    client = anthropic.Anthropic(api_key=api_key)
+    client = anthropic.Anthropic(api_key=api_key, timeout=60.0)
     system_prompt = _build_system_prompt(profile)
 
     scored: list[dict[str, Any]] = []

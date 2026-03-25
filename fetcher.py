@@ -60,7 +60,9 @@ def fetch_all_news() -> list[dict[str, Any]]:
         url = feed_cfg["url"]
         try:
             log.info("Fetching RSS: %s", name)
-            parsed = feedparser.parse(url)
+            resp = requests.get(url, timeout=10, headers={"User-Agent": "DefenseBDDigest/1.0"})
+            resp.raise_for_status()
+            parsed = feedparser.parse(resp.content)
 
             for entry in parsed.entries:
                 published = _parse_feed_date(entry)
