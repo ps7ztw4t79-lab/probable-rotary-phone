@@ -1,0 +1,198 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# Company Profile — Defense BD Digest
+#
+# Edit this file to match your company. The AI scorer uses every field here
+# to decide how relevant each news article or contract opportunity is to you.
+# ══════════════════════════════════════════════════════════════════════════════
+
+company:
+  name: "Your Company Name"   # ← update
+
+  description: >
+    A small business specializing in Systems Integration and Engineering & R&D,
+    delivering technical solutions to DoD, Intelligence Community, and SOCOM
+    customers. Capabilities span platform integration, sensor fusion, digital
+    engineering, model-based systems engineering (MBSE), and technical program
+    management. Growing into autonomous systems / AI-ML, electronic warfare,
+    and directed energy.
+
+  # Current core capabilities — what you can bid on today
+  capabilities:
+    - Systems Integration
+    - Engineering & R&D
+    - Model-Based Systems Engineering (MBSE)
+    - Digital Engineering
+    - Systems Engineering & Technical Assistance (SETA)
+    - Test & Evaluation (T&E)
+    - C4ISR Integration
+    - Sensor Fusion
+    - Platform Integration
+    - Technical Program Management
+
+  # Strategic growth areas — opportunities here should score higher even if
+  # they slightly stretch current capability
+  future_growth_areas:
+    - Autonomous Systems and AI/ML for defense applications
+    - Electronic Warfare (EW) and Directed Energy (DE)
+    - Digital Engineering and MBSE pipelines
+    - Unmanned Systems (UAS / UGV / USV)
+    - Counter-UAS (C-UAS)
+    - AI-enabled ISR and decision support
+
+  # Primary DoD / IC customers you pursue
+  target_agencies:
+    - Army (PEO C3T, AFC, DEVCOM, ARL)
+    - Navy (NAVAIR, NAVSEA, ONR, PEO IWS)
+    - Air Force / Space Force (AFRL, AFLCMC, PEO Digital)
+    - Marine Corps (MCSC)
+    - NSA
+    - DIA
+    - NGA
+    - ODNI
+    - SOCOM
+    - JSOC
+    - DARPA
+    - MDA (Missile Defense Agency)
+    - NRO
+
+  contract_focus:
+    # Set-aside types to pursue as PRIME
+    eligible_set_asides:
+      - Small Business (Total SB)
+      - SDVOSB             # include if your company qualifies; remove if not
+      - VOSB               # include if your company qualifies; remove if not
+
+    # Set-aside types to flag as NOT eligible (will be noted in rationale)
+    ineligible_set_asides:
+      - 8(a)
+      - HUBZone
+      - WOSB
+      - EDWOSB
+
+    # Opportunity types to watch
+    pursuit_types:
+      - Small Business set-aside prime contracts
+      - Subcontracting opportunities under large primes
+      - SBIR / STTR Phase I and II
+      - IDIQ / GWAC task orders (GSA OASIS+, CIO-SP4, SeaPort-NxG)
+      - Other Transaction Authority (OTA)
+      - Broad Agency Announcements (BAA)
+
+  # NAICS codes that align with your capabilities
+  naics_codes:
+    - "541330"   # Engineering Services
+    - "541715"   # R&D — Physical, Engineering & Life Sciences
+    - "541512"   # Computer Systems Design Services
+    - "541519"   # Other Computer Related Services
+    - "541690"   # Other Scientific & Technical Consulting Services
+    - "334511"   # Search, Detection, Navigation, Guidance Instruments
+    - "517410"   # Satellite Telecommunications
+    - "336411"   # Aircraft Manufacturing (UAS relevance)
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Keywords — used to pre-filter items before AI scoring.
+# ──────────────────────────────────────────────────────────────────────────────
+keywords:
+  # Items containing any of these terms are VERY likely relevant
+  high_priority:
+    - autonomous systems
+    - autonomy
+    - artificial intelligence
+    - machine learning
+    - AI/ML
+    - electronic warfare
+    - EW
+    - directed energy
+    - high-energy laser
+    - model-based systems engineering
+    - MBSE
+    - digital engineering
+    - digital twin
+    - systems integration
+    - C4ISR
+    - ISR
+    - unmanned aerial
+    - unmanned systems
+    - UAS
+    - sUAS
+    - counter-UAS
+    - C-UAS
+    - SIGINT
+    - ELINT
+    - sensor fusion
+    - SOCOM
+    - special operations
+    - joint all-domain
+    - JADC2
+    - PNT
+    - resilient communications
+
+  # Items containing these terms may be relevant — let the AI decide
+  medium_priority:
+    - engineering services
+    - systems engineering
+    - technical support
+    - research and development
+    - test and evaluation
+    - program support
+    - defense contractor
+    - DoD
+    - intelligence community
+    - DARPA
+    - AFRL
+    - Army Futures Command
+    - NAVAIR
+    - NAVSEA
+    - program executive office
+    - PEO
+    - OTA
+    - SBIR
+    - subcontract
+    - teaming
+    - integration
+    - platform
+    - multi-domain
+
+# ──────────────────────────────────────────────────────────────────────────────
+# News Sources (RSS) — add / remove feeds here
+# ──────────────────────────────────────────────────────────────────────────────
+rss_feeds:
+  - name: "Defense News"
+    url: "https://www.defensenews.com/arc/outboundfeeds/rss/"
+  - name: "Breaking Defense"
+    url: "https://breakingdefense.com/feed/"
+  - name: "C4ISRNET"
+    url: "https://www.c4isrnet.com/arc/outboundfeeds/rss/"
+  - name: "Federal News Network — Defense"
+    url: "https://federalnewsnetwork.com/category/defense-main/feed/"
+  - name: "DoD News"
+    url: "https://www.defense.gov/DesktopModules/ArticleCS/RSS.ashx?ContentType=1&Site=945&max=10"
+  - name: "National Defense Magazine"
+    url: "https://www.nationaldefensemagazine.org/rss"
+  - name: "AUSA News"
+    url: "https://www.ausa.org/news/feed"
+  - name: "The War Zone"
+    url: "https://www.thedrive.com/the-war-zone/feed"
+  - name: "USNI News"
+    url: "https://news.usni.org/feed"
+  - name: "Air Force Magazine"
+    url: "https://www.airforcemag.com/feed/"
+
+# ──────────────────────────────────────────────────────────────────────────────
+# SAM.gov search queries — each term spawns one API call
+# ──────────────────────────────────────────────────────────────────────────────
+sam_search_terms:
+  - "systems integration defense"
+  - "autonomous systems DoD"
+  - "electronic warfare engineering"
+  - "directed energy research"
+  - "model-based systems engineering MBSE"
+  - "digital engineering DoD"
+  - "C4ISR integration"
+  - "ISR systems engineering"
+  - "unmanned systems integration"
+  - "AI machine learning defense"
+  - "SOCOM special operations engineering"
+  - "counter UAS C-UAS integration"
+  - "sensor fusion ISR"
+  - "SBIR systems integration"
