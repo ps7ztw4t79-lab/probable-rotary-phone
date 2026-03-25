@@ -1,0 +1,37 @@
+name: Weekly Defense BD Digest
+
+on:
+  schedule:
+    - cron: '0 12 * * 1'   # Every Monday at 12:00 UTC (8 AM ET)
+  workflow_dispatch:        # Allow manual trigger from GitHub UI
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run digest
+        run: python digest.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          DIGEST_FROM_EMAIL: ${{ secrets.DIGEST_FROM_EMAIL }}
+          DIGEST_FROM_NAME: ${{ secrets.DIGEST_FROM_NAME }}
+          DIGEST_TO_EMAILS: ${{ secrets.DIGEST_TO_EMAILS }}
+          SAM_GOV_API_KEY: ${{ secrets.SAM_GOV_API_KEY }}
+          MIN_NEWS_SCORE: ${{ vars.MIN_NEWS_SCORE || '45' }}
+          MIN_OPPORTUNITY_SCORE: ${{ vars.MIN_OPPORTUNITY_SCORE || '55' }}
+          LOOKBACK_DAYS: '7'
