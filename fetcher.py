@@ -1,5 +1,6 @@
 """
-fetcher.py — Pull defense news (RSS) and contract opportunities (SAM.gov API).
+fetcher.py — Pull defense news (RSS), contract opportunities (SAM.gov, optional),
+and contract award intelligence (USASpending.gov, no API key required).
 """
 
 import os
@@ -178,3 +179,110 @@ def fetch_sam_opportunities() -> list[dict[str, Any]]:
 
     log.info("SAM.gov total: %d unique opportunities", len(all_opps))
     return all_opps
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# USASpending.gov — Contract Award Intelligence (no API key required)
+# ──────────────────────────────────────────────────────────────────────────────
+
+_USASPENDING_URL = "https://api.usaspending.gov/api/v2/search/spending_by_award/"
+
+# NAICS codes drawn from company_profile.yaml
+_DEFAULT_NAICS = [
+    "541330", "541715", "541512", "541519",
+    "541690", "334511", "517410", "336411",
+]
+
+
+def fetch_usaspending_awards() -> list[dict[str, Any]]:
+    """
+    Fetch recent DoD/IC contract awards from USASpending.gov.
+
+    Completely free — no registration or API key required.
+    Returns award-intelligence items useful for identifying active programs,
+    incumbent contractors, and teaming targets.
+    """
+    profile = _load_profile()
+    naics_codes = [
+        str(n) for n in profile.get("company", {}).get("naics_codes", _DEFAULT_NAICS)
+    ]
+    cutoff = _cutoff_dt()
+    start_date = cutoff.strftime("%Y-%m-%d")
+    end_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    payload = {
+        "filters": {
+            "time_period": [{"start_date": start_date, "end_date": end_date}],
+            "naics_codes": {"require": naics_codes},
+            "award_type_codes": ["A", "B", "C", "D"],  # all contract types
+        },
+        "fields": [
+            "Award ID",
+            "Recipient Name",
+            "Award Amount",
+            "Description",
+            "Awarding Agency",
+            "Awarding Sub Agency",
+            "NAICS Code",
+            "NAICS Description",
+            "Period of Performance Start Date",
+            "Period of Performance Current End Date",
+            "Contract Award Type",
+        ],
+        "sort": "Award Amount",
+        "order": "desc",
+        "limit": 50,
+        "page": 1,
+    }
+
+    try:
+        log.info("USASpending.gov: fetching recent awards (%s → %s)", start_date, end_date)
+        resp = requests.post(_USASPENDING_URL, json=payload, timeout=20)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as exc:
+        log.warning("USASpending.gov fetch failed: %s", exc)
+        return []
+
+    awards: list[dict[str, Any]] = []
+    for result in data.get("results", []):
+        amount = result.get("Award Amount") or 0
+        recipient = result.get("Recipient Name", "Unknown")
+        agency = result.get("Awarding Sub Agency") or result.get("Awarding Agency", "")
+        naics = result.get("NAICS Code", "")
+        naics_desc = result.get("NAICS Description", "")
+        award_id = result.get("Award ID", "")
+        description = (result.get("Description") or "")[:600]
+        perf_start = result.get("Period of Performance Start Date", "")
+        perf_end = result.get("Period of Performance Current End Date", "")
+
+        # Build a useful summary for the AI scorer
+        summary = (
+            f"{recipient} awarded ${amount:,.0f}" if amount else f"Award to {recipient}"
+        )
+        if naics_desc:
+            summary += f" for {naics_desc}"
+        if description:
+            summary += f". {description}"
+
+        awards.append(
+            {
+                "type": "opportunity",
+                "source": "USASpending.gov",
+                "title": f"{recipient} — {agency}" if agency else recipient,
+                "url": f"https://www.usaspending.gov/award/{award_id}" if award_id else "https://www.usaspending.gov",
+                "agency": agency,
+                "naics": naics,
+                "set_aside": "",
+                "notice_type": result.get("Contract Award Type", "Award"),
+                "solicitation_number": award_id,
+                "posted_date": perf_start,
+                "response_deadline": perf_end,
+                "description": summary,
+                "notice_id": award_id,
+                "award_amount": amount,
+            }
+        )
+
+    log.info("USASpending.gov total: %d awards fetched", len(awards))
+    return awards

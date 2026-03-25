@@ -2,9 +2,14 @@
 """
 digest.py — Weekly Defense BD Digest
 =====================================
-Fetches defense news and SAM.gov contract opportunities, scores them with
-Claude AI for relevance to your company, and sends a curated HTML email
-digest via SendGrid.
+Fetches defense news and contract intelligence, scores items with Claude AI,
+and sends a curated HTML email digest.
+
+Required:  ANTHROPIC_API_KEY
+Email:     SMTP_USERNAME + SMTP_PASSWORD  (Gmail/Outlook app password)
+           OR SENDGRID_API_KEY  (if you prefer SendGrid)
+Optional:  SAM_GOV_API_KEY  (adds live contract opportunities on top of
+           USASpending.gov award intelligence, which needs no key)
 
 Usage:
     python digest.py              # run once immediately
@@ -22,7 +27,7 @@ from dotenv import load_dotenv
 # Load .env before importing modules that read env vars
 load_dotenv()
 
-from fetcher import fetch_all_news, fetch_sam_opportunities
+from fetcher import fetch_all_news, fetch_sam_opportunities, fetch_usaspending_awards
 from scorer import score_items
 from email_builder import build_email, send_email
 
@@ -50,8 +55,16 @@ def run(dry_run: bool = False) -> None:
     # ── 1. Fetch ──────────────────────────────────────────────────────────────
     log.info("Step 1/3 — Fetching content …")
     news_raw = fetch_all_news()
-    opps_raw = fetch_sam_opportunities()
-    log.info("  Raw news: %d  |  Raw opportunities: %d", len(news_raw), len(opps_raw))
+
+    # Use SAM.gov if key is available; always supplement with USASpending award intel
+    sam_opps = fetch_sam_opportunities()
+    usa_awards = fetch_usaspending_awards()
+    opps_raw = sam_opps + usa_awards
+
+    log.info(
+        "  Raw news: %d  |  SAM.gov opps: %d  |  USASpending awards: %d",
+        len(news_raw), len(sam_opps), len(usa_awards),
+    )
 
     # ── 2. Score with Claude ──────────────────────────────────────────────────
     log.info("Step 2/3 — Scoring with Claude AI …")
@@ -94,15 +107,15 @@ def run(dry_run: bool = False) -> None:
         print(html)
         return
 
-    log.info("Sending via SendGrid …")
+    log.info("Sending email …")
     try:
         send_email(html)
         log.info("Digest sent successfully.")
     except EnvironmentError as exc:
         log.error("Configuration error: %s", exc)
         log.error(
-            "Make sure SENDGRID_API_KEY, DIGEST_FROM_EMAIL, and DIGEST_TO_EMAILS "
-            "are set in your .env file."
+            "Set SMTP_USERNAME + SMTP_PASSWORD (Gmail/Outlook app password) "
+            "or SENDGRID_API_KEY in your .env file."
         )
         sys.exit(1)
     except Exception as exc:

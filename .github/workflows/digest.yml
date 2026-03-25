@@ -3,7 +3,7 @@ name: Weekly Defense BD Digest
 on:
   schedule:
     - cron: '0 12 * * 1'   # Every Monday at 12:00 UTC (8 AM ET)
-  workflow_dispatch:        # Allow manual trigger from GitHub UI
+  workflow_dispatch:        # Allow manual trigger from GitHub Actions UI
 
 jobs:
   send-digest:
@@ -27,11 +27,25 @@ jobs:
         run: python digest.py
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+          # ── Email: SMTP (recommended) ──────────────────────────────────────
+          SMTP_HOST: ${{ secrets.SMTP_HOST || 'smtp.gmail.com' }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT || '587' }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+
+          # ── Email: SendGrid (optional, used instead of SMTP if set) ────────
           SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
           DIGEST_FROM_EMAIL: ${{ secrets.DIGEST_FROM_EMAIL }}
-          DIGEST_FROM_NAME: ${{ secrets.DIGEST_FROM_NAME }}
+
+          # ── Recipients ────────────────────────────────────────────────────
+          DIGEST_FROM_NAME: ${{ vars.DIGEST_FROM_NAME || 'Defense BD Digest' }}
           DIGEST_TO_EMAILS: ${{ secrets.DIGEST_TO_EMAILS }}
+
+          # ── SAM.gov (optional) ────────────────────────────────────────────
           SAM_GOV_API_KEY: ${{ secrets.SAM_GOV_API_KEY }}
+
+          # ── Tuning ────────────────────────────────────────────────────────
           MIN_NEWS_SCORE: ${{ vars.MIN_NEWS_SCORE || '45' }}
           MIN_OPPORTUNITY_SCORE: ${{ vars.MIN_OPPORTUNITY_SCORE || '55' }}
           LOOKBACK_DAYS: '7'
