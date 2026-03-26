@@ -12,33 +12,54 @@ company:
     An early-stage small business (under $5M revenue, no special set-aside
     designation) headquartered in Huntsville, AL, with staff available in
     San Diego CA, Dayton OH, and the DC/Northern Virginia/Maryland corridor.
-    Specializes in Systems Integration and Engineering & R&D with proven
-    experience on Army High Energy Laser (HEL-D) programs and Army ISR data
-    exploitation / sensor fusion. Primarily pursues subcontracting positions
-    under large prime contractors — most significantly Intuitive Research and
-    Technology (IRT/IRTC), our primary teaming partner who invites us onto
+    Core capabilities span: Advanced AI/ML solutions and edge computing;
+    firmware/FPGA and signal processing design; intelligence community (IC)
+    threat system M&S and Multi-INT exploitation; HEL/directed energy systems
+    engineering and live-fire T&E; HWIL/SIL test support; SBIR/STTR
+    development; and systems engineering & integration. Primary teaming partner
+    is Intuitive Research and Technology (IRT/IRTC), who invites us onto
     pursuits pre-award. Also pursues small-business prime contracts in the
-    $1M–$10M range. Personnel hold active Secret and TS/SCI clearances,
-    enabling work on classified programs. Holds GSA Schedule and SeaPort-NxG
-    contract vehicles. Growing into autonomous systems / AI-ML, broader
-    directed energy / EW, MBSE, and unmanned systems. Has demonstrated ISR
-    SME capability to the DOJ/law enforcement intelligence community via
-    word-of-mouth sourced opportunities.
+    $1M–$10M range. Personnel hold active Secret and TS/SCI clearances.
+    Holds GSA Schedule and SeaPort-NxG contract vehicles. Active SBIR/STTR
+    pursuit via AI SME on staff. Has demonstrated ISR SME capability to the
+    DOJ/law enforcement intelligence community via word-of-mouth opportunities.
 
   # Current core capabilities — what you can bid on today
   capabilities:
-    - High Energy Laser (HEL) systems engineering and T&E (HEL-D program)
+    # AI / Software / Hardware Engineering
+    - Advanced AI/ML Solutions — algorithm development, model training, deployment
+    - Edge Computing & Processing Design — embedded AI, sensor-edge processing
+    - Firmware / FPGA Design — custom hardware logic, signal processing pipelines
+    - Advanced Hardware & Software Prototyping
+    - Digital Engineering & Simulation
+    # ISR / Intelligence
     - Army ISR data exploitation and sensor fusion
-    - Systems Integration
-    - Engineering & R&D
-    - C4ISR Integration
-    - Sensor Fusion and Multi-INT exploitation
-    - Platform Integration
+    - Multi-INT Exploitation — SIGINT, ELINT, IMINT, HUMINT fusion
+    - Intelligence Community (IC) Threat System Modeling & Simulation
+    - Army Intelligence & Security Enterprise support
+    - M&S Tool Development for IC threat systems
+    # Directed Energy / Weapon Systems
+    - High Energy Laser (HEL) systems engineering and T&E (HEL-D program)
+    - Specialized Weapon System Support
+    - Live-fire Testing
+    # Test & Evaluation
+    - Test, Evaluation, Qualification & Acceptance Testing
+    - Hardware-in-the-Loop (HWIL) and Software-in-the-Loop (SIL) Test Support
+    - System Evaluations & Assessments
+    - Field & Flight Testing
+    - Joint & Multinational Experiment Support
+    # Systems Engineering
+    - Systems Engineering & Integration (SE&I)
     - Systems Engineering & Technical Assistance (SETA)
-    - Test & Evaluation (T&E)
     - Model-Based Systems Engineering (MBSE)
-    - Digital Engineering
-    - Technical Program Management
+    - Process Improvement and Systems Optimization
+    # R&D / Program Support
+    - Technology Research & Acceleration
+    - SBIR / STTR Development & Sustainment
+    - Program Management and Project Office Support
+    - Professional Acquisition and Financial Analysis Support
+    - Technology Searches / Innovation ("Shark Tank" model)
+    - C4ISR Integration
 
   # Specific technical depth within capability areas
   # The more specific the match, the higher the score should be
@@ -47,10 +68,29 @@ company:
       - Lethality analysis and effects modeling (kill chain, target vulnerability)
       - High-power fiber laser architecture and power scaling
       - HEL system integration and T&E
+      - Live-fire weapon system testing
     isr_exploitation:
       - SIGINT and ELINT signal processing and analysis
-      - Multi-source data fusion and track correlation
+      - Multi-source data fusion and track correlation (Multi-INT)
       - ISR sensor integration and ground station architecture
+      - IC threat system modeling and simulation
+      - Army Intelligence & Security Enterprise (AISE) support
+    hardware_engineering:
+      - Firmware and FPGA design for signal processing
+      - Edge computing and embedded AI/ML deployment
+      - Hardware-in-the-Loop (HWIL) and Software-in-the-Loop (SIL) test rigs
+      - Advanced hardware prototyping (custom boards, processing cards)
+    ai_ml:
+      - AI/ML algorithm development for targeting and ISR exploitation
+      - Edge AI deployment on embedded platforms
+      - Autonomous sensor processing and classification
+      - M&S tool development for threat evaluation
+    test_evaluation:
+      - Qualification and acceptance testing for weapon systems
+      - HWIL/SIL lab test support
+      - Live-fire range testing
+      - Field and flight test support
+      - Joint and multinational experiment support
 
   # Highest-priority named programs — items touching these score maximum
   priority_programs:
@@ -141,13 +181,16 @@ company:
 
   # Strategic growth areas — score higher even if capability slightly stretches
   future_growth_areas:
+    - AI/ML at the edge — embedded AI on sensor platforms and processing nodes
     - Directed Energy (DE) — expanding beyond HEL-D to Army and Navy DE programs
-    - Electronic Warfare (EW) — leveraging ISR and sensor processing expertise
-    - Autonomous Systems and AI/ML — building on ISR exploitation background
+    - Electronic Warfare (EW) — leveraging FPGA/signal processing and ISR expertise
+    - Autonomous Systems — ISR exploitation background + AI/ML + edge compute
+    - IC Threat Simulation — M&S tool development for IC and Army intelligence customers
     - TITAN / next-gen Army ISR architecture
     - Project Linchpin and AI-enabled targeting
-    - OTA / rapid prototyping at AFC and DEVCOM (new capability to develop)
-    - Digital Engineering and MBSE pipelines
+    - HWIL/SIL lab expansion — weapon system and sensor integration testing
+    - OTA / rapid prototyping at AFC, DEVCOM, and MDA
+    - SBIR/STTR prime contracts — AI, ISR, edge computing, FPGA signal processing
 
   # Primary DoD / IC customers — ranked by priority
   target_agencies:
@@ -304,6 +347,30 @@ keywords:
     - Missile Defense Agency
     - Intuitive Research
     - IRTC
+    # Hardware engineering — newly documented capability
+    - FPGA
+    - firmware
+    - edge computing
+    - embedded AI
+    - hardware-in-the-loop
+    - HWIL
+    - software-in-the-loop
+    - SIL testing
+    - signal processing design
+    # IC / threat simulation — newly documented capability
+    - threat simulation
+    - IC threat
+    - intelligence community M&S
+    - M&S tool
+    - threat modeling
+    - Army Intelligence Security Enterprise
+    - AISE
+    # T&E expansion
+    - live fire
+    - live-fire
+    - qualification testing
+    - acceptance testing
+    - flight test
     # Pre-solicitation signals — these arrive before GovWin has them
     - Sources Sought
     - Request for Information
@@ -315,8 +382,11 @@ keywords:
     - SBIR artificial intelligence
     - SBIR machine learning
     - SBIR ISR
+    - SBIR FPGA
+    - SBIR edge computing
     - DEVCOM SBIR
     - AFC SBIR
+    - MDA SBIR
 
   # Items containing these terms may be relevant — let the AI decide
   medium_priority:
@@ -419,6 +489,15 @@ sam_search_terms:
   - "SBIR artificial intelligence ISR Army"
   - "SBIR machine learning targeting sensor fusion"
   - "SBIR directed energy laser Army"
+  # Hardware / FPGA / Edge
+  - "FPGA firmware signal processing defense embedded"
+  - "edge computing AI embedded sensor processing Army"
+  - "hardware in the loop HWIL weapon system test"
+  - "SIL HWIL integration test Army weapons"
+  # IC / Threat M&S
+  - "intelligence community threat simulation M&S Army"
+  - "Army Intelligence Security Enterprise AISE support"
+  - "threat evaluation M&S tool development IC"
   # Adjacent markets
   - "DOJ Department Justice ISR intelligence support"
   - "PEO IEW&S systems integration Huntsville"

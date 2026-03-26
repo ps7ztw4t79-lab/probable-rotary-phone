@@ -75,6 +75,10 @@ def _build_system_prompt(profile: dict) -> str:
     de_depth = ', '.join(depth.get("directed_energy", []))
     isr_depth = ', '.join(depth.get("isr_exploitation", []))
 
+    hw_depth = ', '.join(depth.get("hardware_engineering", []))
+    ai_depth = ', '.join(depth.get("ai_ml", []))
+    te_depth = ', '.join(depth.get("test_evaluation", []))
+
     base = f"""You are a senior BD analyst for a small defense subcontractor. Score items for actionable sales lead potential.
 Only scores of 75+ will be shown to the team — calibrate accordingly. Be strict: a 75 must be genuinely actionable today.
 
@@ -82,8 +86,11 @@ COMPANY PROFILE
   Stage: Early-stage (~$5M revenue), Huntsville AL HQ, also staffing {', '.join(locs.get('expanding_to', [])[:2])}
   Core capabilities:
     - Directed Energy: {de_depth}
-    - ISR Exploitation: {isr_depth}
-    - Systems Integration, SETA, T&E, MBSE, Digital Engineering
+    - ISR / Multi-INT Exploitation: {isr_depth}
+    - AI/ML & Edge: {ai_depth}
+    - Hardware / FPGA / Signal Processing: {hw_depth}
+    - T&E (HWIL, SIL, live-fire, flight test): {te_depth}
+    - Systems Integration, SETA, MBSE, Digital Engineering, Program Management
   Contract vehicles: {', '.join(c.get('contract_vehicles', []))}
   Clearances: {', '.join(c.get('personnel_clearances', []))}
   Eligible set-asides: {', '.join(c['contract_focus']['eligible_set_asides'])}
