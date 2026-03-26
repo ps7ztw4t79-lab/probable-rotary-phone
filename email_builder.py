@@ -39,12 +39,13 @@ log = logging.getLogger(__name__)
 # ──────────────────────────────────────────────────────────────────────────────
 
 LEAD_TYPE_META: dict[str, dict] = {
-    "opportunity":  {"label": "CONTRACT OPP",  "color": "#0d47a1"},
-    "teaming":      {"label": "TEAMING",        "color": "#1b5e20"},
-    "award_intel":  {"label": "AWARD INTEL",    "color": "#4a148c"},
-    "market_intel": {"label": "MARKET INTEL",   "color": "#b45309"},
-    "program_news": {"label": "PROGRAM NEWS",   "color": "#b91c1c"},
-    "trend":        {"label": "TREND ↑",        "color": "#0891b2"},
+    "opportunity":  {"label": "CONTRACT OPP",   "color": "#0d47a1"},
+    "teaming":      {"label": "TEAMING",         "color": "#1b5e20"},
+    "award_intel":  {"label": "AWARD INTEL",     "color": "#4a148c"},
+    "market_intel": {"label": "MARKET INTEL",    "color": "#b45309"},
+    "program_news": {"label": "PROGRAM NEWS",    "color": "#b91c1c"},
+    "trend":        {"label": "TREND ↑",         "color": "#0891b2"},
+    "recompete":    {"label": "⚠ RECOMPETE",     "color": "#c2410c"},
 }
 
 
@@ -81,27 +82,21 @@ def _strip_html(text: str) -> str:
     return re.sub(r"<[^>]+>", " ", text).strip()
 
 
-def _feedback_urls(item: dict, repo: str) -> tuple[str, str]:
-    """Return (thumbs_up_url, thumbs_down_url) for GitHub issue feedback."""
+def _feedback_urls(item: dict) -> tuple[str, str]:
+    """Return (thumbs_up_url, thumbs_down_url) as one-click mailto: links.
+
+    Clicking opens the user's email client with a pre-filled subject line.
+    Sending logs the vote in their sent mail for later reference.
+    """
+    to_email = os.getenv("DIGEST_TO_EMAILS", "").split(",")[0].strip()
     title = (item.get("title") or "")[:80]
     score = item.get("relevance_score", 0)
 
-    def _url(vote: str, emoji: str) -> str:
-        issue_title = f"digest-feedback: {emoji} [{score}] {title}"
-        body = (
-            f"Vote: {vote}\n"
-            f"Score: {score}\n"
-            f"Source: {item.get('source', '')}\n"
-            f"URL: {item.get('url', '')}"
-        )
-        return (
-            f"https://github.com/{repo}/issues/new"
-            f"?labels=digest-feedback"
-            f"&title={quote(issue_title)}"
-            f"&body={quote(body)}"
-        )
+    def _url(emoji: str) -> str:
+        subject = f"digest-feedback: {emoji} [{score}] {title}"
+        return f"mailto:{to_email}?subject={quote(subject)}"
 
-    return _url("thumbs_up", "👍"), _url("thumbs_down", "👎")
+    return _url("👍"), _url("👎")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -188,7 +183,7 @@ _TEMPLATE = """
                   </span>
                   <span style="background:{{ sc }};color:#fff;font-size:10px;font-weight:700;
                                padding:2px 9px;border-radius:4px;margin-left:6px;letter-spacing:.6px;">
-                    {{ score_label(opp.relevance_score) }} &nbsp;{{ opp.relevance_score }}/100
+                    {{ score_label(opp.relevance_score) }} &nbsp;{{ opp.relevance_score }}%
                   </span>
                   {% if opp.set_aside %}
                   <span style="background:#f1f5f9;color:#475569;font-size:10px;
@@ -254,7 +249,7 @@ _TEMPLATE = """
                   </span>
                   <span style="background:{{ sc }};color:#fff;font-size:10px;font-weight:700;
                                padding:2px 9px;border-radius:4px;margin-left:6px;">
-                    {{ score_label(item.relevance_score) }} &nbsp;{{ item.relevance_score }}/100
+                    {{ score_label(item.relevance_score) }} &nbsp;{{ item.relevance_score }}%
                   </span>
                   <span style="color:#94a3b8;font-size:11px;margin-left:10px;">
                     {{ item.source }}{% if item.published %} &mdash; {{ fmt_date(item.published) }}{% endif %}
@@ -345,14 +340,12 @@ def build_email(
     quiet_day: bool = False,
 ) -> str:
     """Render the Jinja2 HTML template and return the email body string."""
-    repo = os.getenv("GITHUB_REPOSITORY", "ps7ztw4t79-lab/probable-rotary-phone")
-
     # Attach feedback URLs to each item (deep copy so we don't mutate caller's data)
     def _with_feedback(items: list[dict]) -> list[dict]:
         result = []
         for item in items:
             enriched = copy.copy(item)
-            up, down = _feedback_urls(item, repo)
+            up, down = _feedback_urls(item)
             enriched["_feedback_up"] = up
             enriched["_feedback_down"] = down
             result.append(enriched)
