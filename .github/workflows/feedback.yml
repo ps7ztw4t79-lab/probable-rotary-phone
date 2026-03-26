@@ -1,0 +1,57 @@
+name: Process Digest Feedback
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  process-feedback:
+    # Only run for issues with the digest-feedback label
+    if: contains(github.event.issue.labels.*.name, 'digest-feedback')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Process feedback issue
+        run: python .github/scripts/process_feedback.py
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+
+      - name: Commit updated feedback log
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add feedback_log.json
+          git diff --staged --quiet || git commit -m "chore: record digest feedback from issue #${{ github.event.issue.number }} [skip ci]"
+          git push
+
+      - name: Close feedback issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed'
+            });
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: 'Thanks — feedback recorded! The scoring model will use this next time the digest runs.'
+            });

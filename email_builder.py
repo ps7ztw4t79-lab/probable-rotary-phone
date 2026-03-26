@@ -12,12 +12,14 @@ For SMTP the simplest setup is a Gmail App Password:
   SMTP_PASSWORD=xxxx xxxx xxxx xxxx   ← 16-char App Password
 """
 
+import copy
 import logging
 import os
 import re
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from urllib.parse import quote
 from datetime import datetime
 from typing import Any
 
@@ -76,6 +78,29 @@ def _fmt_date(date_str: str) -> str:
 
 def _strip_html(text: str) -> str:
     return re.sub(r"<[^>]+>", " ", text).strip()
+
+
+def _feedback_urls(item: dict, repo: str) -> tuple[str, str]:
+    """Return (thumbs_up_url, thumbs_down_url) for GitHub issue feedback."""
+    title = (item.get("title") or "")[:80]
+    score = item.get("relevance_score", 0)
+
+    def _url(vote: str, emoji: str) -> str:
+        issue_title = f"digest-feedback: {emoji} [{score}] {title}"
+        body = (
+            f"Vote: {vote}\n"
+            f"Score: {score}\n"
+            f"Source: {item.get('source', '')}\n"
+            f"URL: {item.get('url', '')}"
+        )
+        return (
+            f"https://github.com/{repo}/issues/new"
+            f"?labels=digest-feedback"
+            f"&title={quote(issue_title)}"
+            f"&body={quote(body)}"
+        )
+
+    return _url("thumbs_up", "👍"), _url("thumbs_down", "👎")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -225,12 +250,18 @@ _TEMPLATE = """
                   {% endfor %}
                 </div>
                 {% endif %}
-                <!-- Link -->
-                <div style="margin-top:10px;">
+                <!-- Link + Feedback -->
+                <div style="margin-top:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
                   <a href="{{ opp.url }}"
                      style="color:#2563eb;font-size:12px;text-decoration:none;">
                     View on SAM.gov &#8599;
                   </a>
+                  <span style="color:#cbd5e1;font-size:11px;">|</span>
+                  <span style="font-size:11px;color:#94a3b8;">Helpful?</span>
+                  <a href="{{ opp._feedback_up | safe }}"
+                     style="font-size:13px;text-decoration:none;" title="Mark as useful">👍</a>
+                  <a href="{{ opp._feedback_down | safe }}"
+                     style="font-size:13px;text-decoration:none;" title="Mark as not relevant">👎</a>
                 </div>
               </td>
             </tr>
@@ -289,7 +320,7 @@ _TEMPLATE = """
                   &#8594; {{ item.recommended_action }}
                 </div>
                 {% endif %}
-                <!-- Tags + link -->
+                <!-- Tags + link + feedback -->
                 <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px;">
                   {% for tag in item.tags[:4] %}
                   <span style="background:#dcfce7;color:#166534;font-size:11px;padding:2px 8px;
@@ -299,6 +330,11 @@ _TEMPLATE = """
                      style="color:#2563eb;font-size:11px;text-decoration:none;margin-left:auto;">
                     Read more &#8599;
                   </a>
+                  <span style="color:#cbd5e1;font-size:11px;">|</span>
+                  <a href="{{ item._feedback_up | safe }}"
+                     style="font-size:13px;text-decoration:none;" title="Mark as useful">👍</a>
+                  <a href="{{ item._feedback_down | safe }}"
+                     style="font-size:13px;text-decoration:none;" title="Mark as not relevant">👎</a>
                 </div>
               </td>
             </tr>
@@ -347,6 +383,22 @@ def build_email(
     trend_delta: int | None = None,
 ) -> str:
     """Render the Jinja2 HTML template and return the email body string."""
+    repo = os.getenv("GITHUB_REPOSITORY", "ps7ztw4t79-lab/probable-rotary-phone")
+
+    # Attach feedback URLs to each item (deep copy so we don't mutate caller's data)
+    def _with_feedback(items: list[dict]) -> list[dict]:
+        result = []
+        for item in items:
+            enriched = copy.copy(item)
+            up, down = _feedback_urls(item, repo)
+            enriched["_feedback_up"] = up
+            enriched["_feedback_down"] = down
+            result.append(enriched)
+        return result
+
+    opportunities = _with_feedback(opportunities)
+    news_items = _with_feedback(news_items)
+
     env = Environment(loader=BaseLoader(), autoescape=True)
     env.globals["score_color"] = _score_color
     env.globals["score_label"] = _score_label

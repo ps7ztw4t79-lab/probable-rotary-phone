@@ -12,6 +12,7 @@ Each item receives:
 import json
 import logging
 import os
+from pathlib import Path
 from typing import Any
 
 import anthropic
@@ -19,7 +20,36 @@ import yaml
 
 log = logging.getLogger(__name__)
 
-BATCH_SIZE = 15  # Items per Claude call — balances cost vs. latency
+BATCH_SIZE = 15
+_FEEDBACK_FILE = Path("feedback_log.json")
+
+
+def _load_feedback_context() -> str:
+    """
+    Read feedback_log.json and return a formatted string for the scoring prompt.
+    Items the team thumbs-up'd will be scored higher; thumbs-down'd lower.
+    Returns empty string if no feedback yet.
+    """
+    if not _FEEDBACK_FILE.exists():
+        return ""
+    try:
+        data = json.loads(_FEEDBACK_FILE.read_text())
+        entries = data.get("feedback", [])
+        if not entries:
+            return ""
+        ups = [e["title"] for e in entries if e.get("vote") == "up"][-20:]
+        downs = [e["title"] for e in entries if e.get("vote") == "down"][-20:]
+        lines = []
+        if ups:
+            lines.append("PREVIOUSLY RATED USEFUL BY THE TEAM (score similar items higher):")
+            lines.extend(f"  + {t}" for t in ups)
+        if downs:
+            lines.append("PREVIOUSLY RATED NOT RELEVANT (score similar items lower/penalize):")
+            lines.extend(f"  - {t}" for t in downs)
+        return "\n".join(lines)
+    except Exception as exc:
+        log.debug("Could not load feedback log: %s", exc)
+        return ""  # Items per Claude call — balances cost vs. latency
 
 _PROFILE: dict | None = None
 
@@ -45,7 +75,7 @@ def _build_system_prompt(profile: dict) -> str:
     de_depth = ', '.join(depth.get("directed_energy", []))
     isr_depth = ', '.join(depth.get("isr_exploitation", []))
 
-    return f"""You are a senior BD analyst for a small defense subcontractor. Score items for actionable sales lead potential.
+    base = f"""You are a senior BD analyst for a small defense subcontractor. Score items for actionable sales lead potential.
 Only scores of 75+ will be shown to the team — calibrate accordingly. Be strict: a 75 must be genuinely actionable today.
 
 COMPANY PROFILE
@@ -97,6 +127,11 @@ IMPORTANT
   - SBIR Phase I/II and OTA/BAA at DEVCOM, ARL, or AFC are HIGH value for this stage
   - recommended_action must name a specific office, program, or prime — never generic
   - tags: 2-5 short labels (program name, tech area, agency, contract type)"""
+
+    feedback_ctx = _load_feedback_context()
+    if feedback_ctx:
+        return base + f"\n\nHISTORICAL FEEDBACK FROM YOUR TEAM:\n{feedback_ctx}"
+    return base
 
 
 def _build_user_prompt(items: list[dict], item_type: str) -> str:

@@ -235,6 +235,12 @@ def run(dry_run: bool = False) -> None:
         f"{trend_delta:+d} vs last week" if trend_delta is not None else "first run",
     )
 
+    # ── Quiet-day check ───────────────────────────────────────────────────────
+    if not news_final and not opps_final:
+        log.info("No items above threshold today — skipping send.")
+        _update_and_save_state(state, news_raw, opps_raw, 0, run_dt)
+        return
+
     # ── 4. Executive summary + email ──────────────────────────────────────────
     log.info("Step 4/4 — Building email …")
     api_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
