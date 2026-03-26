@@ -128,7 +128,10 @@ def fetch_sam_opportunities() -> list[dict[str, Any]]:
         return []
 
     profile = _load_profile()
-    search_terms: list[str] = profile.get("sam_search_terms", [])
+    # Limit to 8 queries per run to stay within free-tier rate limits
+    # Strip special chars that cause 400s: hyphens, ampersands, slashes
+    raw_terms: list[str] = profile.get("sam_search_terms", [])[:8]
+    search_terms = [re.sub(r"[&\-/]", " ", t).strip() for t in raw_terms]
     posted_from = (_cutoff_dt()).strftime("%m/%d/%Y")
 
     all_opps: list[dict[str, Any]] = []
@@ -142,7 +145,6 @@ def fetch_sam_opportunities() -> list[dict[str, Any]]:
                 "postedFrom": posted_from,
                 "limit": 25,
                 "offset": 0,
-                "active": "Yes",
             }
             log.info("SAM.gov search: '%s'", term)
             resp = requests.get(_SAM_URL, params=params, timeout=20)
@@ -184,8 +186,12 @@ def fetch_sam_opportunities() -> list[dict[str, Any]]:
 
         except requests.HTTPError as exc:
             log.warning("SAM.gov HTTP error for '%s': %s", term, exc)
+            if exc.response is not None and exc.response.status_code == 429:
+                break  # Stop immediately on rate limit — remaining queries will also fail
         except Exception as exc:
             log.warning("SAM.gov fetch failed for '%s': %s", term, exc)
+        else:
+            import time; time.sleep(1)  # 1s pause between requests to stay under rate limit
 
     log.info("SAM.gov total: %d unique opportunities", len(all_opps))
     return all_opps
