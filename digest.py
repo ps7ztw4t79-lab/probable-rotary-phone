@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-digest.py — Weekly Defense BD Digest
+digest.py — Daily Defense BD Digest
 =====================================
 Fetches defense news and contract intelligence, scores items with Claude AI,
 and sends a curated HTML email digest.
@@ -207,7 +207,7 @@ def run(dry_run: bool = False) -> None:
     haiku_news = _min_score("MIN_NEWS_SCORE", 50)
     haiku_opp = _min_score("MIN_OPPORTUNITY_SCORE", 50)
     # Final threshold — Opus enforces this bar; only items above this go in the email
-    final_threshold = 75
+    final_threshold = 70
 
     news_filtered = sorted(
         [i for i in news_scored if i.get("relevance_score", 0) >= haiku_news],
@@ -219,12 +219,12 @@ def run(dry_run: bool = False) -> None:
         [i for i in opps_scored if i.get("relevance_score", 0) >= haiku_opp],
         key=lambda x: x["relevance_score"],
         reverse=True,
-    )[:12]
+    )[:20]
 
     # ── 3. Deep-score top items with Opus ─────────────────────────────────────
     log.info("Step 3/4 — Deep-scoring top leads with Claude Opus …")
     all_scored = news_filtered + opps_filtered
-    all_rescored = rescore_top_items(all_scored, top_n=10)
+    all_rescored = rescore_top_items(all_scored, top_n=15)
     # Opus applies the strict 75 bar via revised scores — filter here
     news_final = [i for i in all_rescored
                   if i.get("type") == "news" and i.get("relevance_score", 0) >= final_threshold]
@@ -245,19 +245,18 @@ def run(dry_run: bool = False) -> None:
         f"{trend_delta:+d} vs last week" if trend_delta is not None else "first run",
     )
 
-    # ── Quiet-day check ───────────────────────────────────────────────────────
-    if not news_final and not opps_final:
-        log.info("No items above threshold today — skipping send.")
-        _update_and_save_state(state, news_raw, opps_raw, 0, run_dt)
-        return
-
     # ── 4. Build + send email ─────────────────────────────────────────────────
+    quiet_day = not news_final and not opps_final
+    if quiet_day:
+        log.info("No items above threshold today — sending quiet-day email.")
+
     log.info("Step 4/4 — Building email …")
     html = build_email(
         news_items=news_final,
         opportunities=opps_final,
         run_dt=run_dt,
         trend_delta=trend_delta,
+        quiet_day=quiet_day,
     )
 
     if dry_run:
@@ -269,7 +268,12 @@ def run(dry_run: bool = False) -> None:
 
     log.info("Sending email …")
     try:
-        send_email(html)
+        subject = (
+            f"Defense BD Digest — Quiet Day {run_dt.strftime('%b %d')}"
+            if quiet_day
+            else None  # send_email uses its default date subject
+        )
+        send_email(html, subject=subject)
         log.info("Digest sent successfully.")
     except EnvironmentError as exc:
         log.error("Configuration error: %s", exc)
