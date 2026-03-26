@@ -208,11 +208,6 @@ _TEMPLATE = """
                   {% if opp.notice_type %} &nbsp;·&nbsp; {{ opp.notice_type }}{% endif %}
                   {% if opp.response_deadline %} &nbsp;·&nbsp; <span style="color:#dc2626;font-weight:600;">Due {{ fmt_date(opp.response_deadline) }}</span>{% endif %}
                 </div>
-                {% if opp.rationale %}
-                <div style="font-size:13px;color:#334155;margin-bottom:7px;line-height:1.5;">
-                  {{ opp.rationale }}
-                </div>
-                {% endif %}
                 {% if opp.recommended_action %}
                 <div style="font-size:12.5px;color:#15803d;font-weight:600;margin-bottom:7px;">
                   &#8594; {{ opp.recommended_action }}
@@ -270,11 +265,6 @@ _TEMPLATE = """
                            text-decoration:none;line-height:1.35;display:block;margin-bottom:7px;">
                   {{ item.title | truncate(130) }}
                 </a>
-                {% if item.rationale %}
-                <div style="font-size:13px;color:#374151;margin-bottom:6px;line-height:1.5;">
-                  {{ item.rationale }}
-                </div>
-                {% endif %}
                 {% if item.recommended_action %}
                 <div style="font-size:12.5px;color:#15803d;font-weight:600;margin-bottom:6px;">
                   &#8594; {{ item.recommended_action }}
@@ -309,9 +299,14 @@ _TEMPLATE = """
         </div>
         {% endif %}
 
-        {% if not opportunities and not news_items %}
-        <div style="padding:40px 0;text-align:center;color:#94a3b8;font-size:14px;">
-          No relevant items found this week. Try lowering MIN_NEWS_SCORE / MIN_OPPORTUNITY_SCORE in .env.
+        {% if quiet_day %}
+        <div style="padding:40px 0;text-align:center;">
+          <div style="font-size:32px;margin-bottom:12px;">&#128274;</div>
+          <div style="color:#0f1e36;font-size:16px;font-weight:700;margin-bottom:8px;">Quiet Day</div>
+          <div style="color:#64748b;font-size:13px;max-width:380px;margin:0 auto;line-height:1.6;">
+            No defense news or contract opportunities scored above the relevance threshold today.
+            The pipeline ran normally — nothing significant surfaced for your focus areas.
+          </div>
         </div>
         {% endif %}
 
@@ -347,6 +342,7 @@ def build_email(
     run_dt: datetime,
     executive_summary: str = "",
     trend_delta: int | None = None,
+    quiet_day: bool = False,
 ) -> str:
     """Render the Jinja2 HTML template and return the email body string."""
     repo = os.getenv("GITHUB_REPOSITORY", "ps7ztw4t79-lab/probable-rotary-phone")
@@ -386,6 +382,7 @@ def build_email(
         news_count=len(news_items),
         executive_summary=executive_summary,
         trend_delta=trend_delta,
+        quiet_day=quiet_day,
     )
 
 
