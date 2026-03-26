@@ -46,7 +46,7 @@ jobs:
           DIGEST_TO_EMAILS: ${{ secrets.DIGEST_TO_EMAILS }}
 
           # ── SAM.gov (optional) ────────────────────────────────────────────
-          SAM_GOV_API_KEY: ${{ secrets.SAM_GOV_API_KEY }}
+          SAM_GOV_API_KEY: ${{ secrets.SAM_api }}
 
           # ── Tuning ────────────────────────────────────────────────────────
           # Haiku pre-filter thresholds — lenient, Opus enforces the real 75 bar
