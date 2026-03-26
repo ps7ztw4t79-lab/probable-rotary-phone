@@ -180,7 +180,8 @@ def run(dry_run: bool = False) -> None:
     # ── 1. Fetch ──────────────────────────────────────────────────────────────
     log.info("Step 1/4 — Fetching content …")
     news_raw = fetch_all_news()
-    news_raw = _filter_seen(news_raw, seen_urls)
+    if os.getenv("SKIP_DEDUP", "").lower() not in ("1", "true", "yes"):
+        news_raw = _filter_seen(news_raw, seen_urls)
 
     sam_opps = fetch_sam_opportunities()
     usa_awards = fetch_usaspending_awards()
