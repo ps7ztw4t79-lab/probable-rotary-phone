@@ -51,7 +51,7 @@ jobs:
           # ── Tuning ────────────────────────────────────────────────────────
           MIN_NEWS_SCORE: ${{ vars.MIN_NEWS_SCORE || '75' }}
           MIN_OPPORTUNITY_SCORE: ${{ vars.MIN_OPPORTUNITY_SCORE || '75' }}
-          LOOKBACK_DAYS: '1'
+          LOOKBACK_DAYS: ${{ vars.LOOKBACK_DAYS || '7' }}
 
       - name: Save deduplication state
         if: success()

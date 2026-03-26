@@ -304,8 +304,20 @@ def fetch_usaspending_awards() -> list[dict[str, Any]]:
 
 _FPDS_BASE = "https://www.fpds.gov/ezsearch/FEEDS/ATOM?FEEDNAME=AWARD&q="
 
-# Use the first 6 SAM search terms to avoid hammering the FPDS endpoint
-_FPDS_MAX_QUERIES = 6
+# FPDS requires short, simple queries — long phrases and hyphens break its parser.
+# Keep these to 1-3 words; pull from profile keywords that map cleanly.
+_FPDS_QUERIES = [
+    "directed energy",
+    "high energy laser",
+    "ISR exploitation",
+    "sensor fusion",
+    "TITAN",
+    "Linchpin",
+    "DEVCOM",
+    "fiber laser",
+    "SIGINT",
+    "FPGA signal processing",
+]
 
 
 def fetch_fpds_awards() -> list[dict[str, Any]]:
@@ -316,14 +328,12 @@ def fetch_fpds_awards() -> list[dict[str, Any]]:
     Complements USASpending.gov with FPDS-specific metadata and
     sometimes surfaces awards not yet indexed by USASpending.
     """
-    profile = _load_profile()
-    terms = profile.get("sam_search_terms", [])[:_FPDS_MAX_QUERIES]
     cutoff = _cutoff_dt()
 
     awards: list[dict[str, Any]] = []
     seen_ids: set[str] = set()
 
-    for term in terms:
+    for term in _FPDS_QUERIES:
         url = _FPDS_BASE + quote_plus(term)
         try:
             log.info("FPDS search: '%s'", term)
@@ -379,7 +389,7 @@ def fetch_fpds_awards() -> list[dict[str, Any]]:
 # SBIR.gov — Open DoD Topics (no API key required)
 # ──────────────────────────────────────────────────────────────────────────────
 
-_SBIR_API = "https://www.sbir.gov/api/solicitations.json"
+_SBIR_API = "https://api.sbir.gov/public/api/solicitations"
 
 # Components to filter for — anything with these strings in agency/branch is relevant
 _SBIR_TARGET_AGENCIES = {
@@ -411,7 +421,6 @@ def fetch_sbir_topics() -> list[dict[str, Any]]:
         "rows": 50,
         "program": "SBIR",
         "agency": "DOD",
-        "status": "Open",
     }
 
     try:
