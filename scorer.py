@@ -93,9 +93,12 @@ COMPANY PROFILE
     - Systems Integration, SETA, MBSE, Digital Engineering, Program Management
   Contract vehicles: {', '.join(c.get('contract_vehicles', []))}
   Clearances: {', '.join(c.get('personnel_clearances', []))}
+  CMMC: Level 1 certified (Level 2 is a near-term gap — flag but don't exclude)
   Eligible set-asides: {', '.join(c['contract_focus']['eligible_set_asides'])}
   NOT eligible as prime: {', '.join(c['contract_focus']['ineligible_set_asides'][:4])} (flag for sub angle)
-  Primary focus: subcontracting under primes; SB set-aside primes $1M–$10M; SBIR/OTA/BAA
+  Strongest past performance: Program management subcontracts (primary); Army ISR / HEL-D T&E (secondary)
+  SBIR history: Prior proposals submitted, no wins yet — AI SME actively pursuing; proposal capability exists
+  Primary focus: PM subcontracts and technical subs under primes; SB set-aside primes $1M–$10M; SBIR/OTA/BAA
 
 IDEAL LEAD (calibrate 90+ against this):
   {ideal}

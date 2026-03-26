@@ -228,6 +228,33 @@ company:
     - Secret
     - TS/SCI
 
+  # Cybersecurity maturity
+  cmmc:
+    current_level: "CMMC Level 1 certified"
+    notes: >
+      CMMC Level 1 covers the 17 basic cybersecurity practices (FAR 52.204-21).
+      Many DoD programs handling CUI require CMMC Level 2 (NIST SP 800-171).
+      Do NOT exclude opportunities requiring Level 2 — it is achievable and
+      should be treated as a near-term investment, not a disqualifier.
+      Flag any opportunity that explicitly requires CMMC Level 2+ as
+      actionable but note the certification gap in the rationale.
+
+  # Past performance — strongest categories
+  past_performance:
+    strongest:
+      - "Program management subcontracts (primary and most frequent)"
+      - "Army ISR exploitation and sensor fusion (G-2 ISR Task Force via IRT)"
+      - "High Energy Laser systems engineering and T&E (HEL-D program)"
+    sbir_history: >
+      Has submitted SBIR proposals — no Phase I wins yet. AI SME on staff is
+      actively refining approach. Proposal-writing capability exists.
+      Score any open SBIR topic touching AI/ISR/DE/FPGA/edge compute as 80+
+      since we have the SME and proposal infrastructure to compete.
+    notes: >
+      Strongest past performance is program management subcontracts.
+      When recommending actions, PM subcontract positions under a prime
+      are the most credible near-term pursuit path alongside technical subs.
+
   # Opportunity size filter — minimum worth tracking
   min_opportunity_value: "$1M"
   target_opportunity_range: "$1M – $10M (subcontracts and small primes)"
