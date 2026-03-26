@@ -6,15 +6,18 @@
 # ══════════════════════════════════════════════════════════════════════════════
 
 company:
-  name: "Your Company Name"   # ← update
+  name: "[Your Company]"   # kept anonymous — update if desired
 
   description: >
-    A small business specializing in Systems Integration and Engineering & R&D,
-    delivering technical solutions to DoD, Intelligence Community, and SOCOM
-    customers. Capabilities span platform integration, sensor fusion, digital
-    engineering, model-based systems engineering (MBSE), and technical program
-    management. Growing into autonomous systems / AI-ML, electronic warfare,
-    and directed energy.
+    A small business (no special set-aside designation) specializing in Systems
+    Integration and Engineering & R&D. Primarily pursues subcontracting
+    opportunities under large prime contractors, leveraging personnel with
+    active Secret and TS/SCI clearances to support classified DoD and
+    Intelligence Community programs. Holds a GSA Schedule and SeaPort-NxG
+    contract vehicle. Capabilities span C4ISR integration, sensor fusion,
+    platform integration, SETA, test & evaluation, and digital engineering /
+    MBSE. Growing into autonomous systems / AI-ML, electronic warfare,
+    directed energy, and unmanned systems.
 
   # Current core capabilities — what you can bid on today
   capabilities:
@@ -55,15 +58,27 @@ company:
     - MDA (Missile Defense Agency)
     - NRO
 
+  # Contract vehicles currently held
+  contract_vehicles:
+    - GSA Schedule (PSS / IT)
+    - SeaPort-NxG (Navy professional services — prime vehicle)
+
+  # Personnel clearance levels held
+  personnel_clearances:
+    - Secret
+    - TS/SCI
+
   contract_focus:
-    # Set-aside types to pursue as PRIME
+    # Set-aside types eligible to pursue as PRIME
+    # (no SDVOSB/VOSB/WOSB/8(a) — general small business only)
     eligible_set_asides:
       - Small Business (Total SB)
-      - SDVOSB             # include if your company qualifies; remove if not
-      - VOSB               # include if your company qualifies; remove if not
+      - Unrestricted (full and open)
 
-    # Set-aside types to flag as NOT eligible (will be noted in rationale)
+    # Set-aside types NOT eligible as prime — flag for subcontracting angle
     ineligible_set_asides:
+      - SDVOSB
+      - VOSB
       - 8(a)
       - HUBZone
       - WOSB
@@ -71,12 +86,14 @@ company:
 
     # Opportunity types to watch
     pursuit_types:
+      - Subcontracting under large prime contractors (PRIMARY focus)
       - Small Business set-aside prime contracts
-      - Subcontracting opportunities under large primes
+      - SeaPort-NxG task orders (Navy/USMC)
+      - GSA Schedule task orders
       - SBIR / STTR Phase I and II
-      - IDIQ / GWAC task orders (GSA OASIS+, CIO-SP4, SeaPort-NxG)
       - Other Transaction Authority (OTA)
       - Broad Agency Announcements (BAA)
+      - Classified program subcontracts (TS/SCI billets)
 
   # NAICS codes that align with your capabilities
   naics_codes:

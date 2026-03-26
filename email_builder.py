@@ -113,6 +113,11 @@ _TEMPLATE = """
             <td style="padding-right:22px;">
               <div style="color:#38bdf8;font-size:28px;font-weight:800;line-height:1;">{{ high_count }}</div>
               <div style="color:#94a3b8;font-size:11px;text-transform:uppercase;letter-spacing:.8px;">High-Priority Leads</div>
+              {% if trend_delta is not none %}
+              <div style="color:{% if trend_delta > 0 %}#34d399{% elif trend_delta < 0 %}#f87171{% else %}#94a3b8{% endif %};font-size:11px;font-weight:700;margin-top:2px;">
+                {% if trend_delta > 0 %}&#8593;{{ trend_delta }}{% elif trend_delta < 0 %}&#8595;{{ trend_delta|abs }}{% else %}&mdash;{% endif %} vs last week
+              </div>
+              {% endif %}
             </td>
             <td style="padding-right:22px;">
               <div style="color:#34d399;font-size:28px;font-weight:800;line-height:1;">{{ opp_count }}</div>
@@ -130,6 +135,21 @@ _TEMPLATE = """
     <!-- ══ BODY ══ -->
     <tr>
       <td style="background:#ffffff;padding:0 36px 36px;border-radius:0 0 10px 10px;">
+
+        {% if executive_summary %}
+        <!-- ── Section: Executive Summary ── -->
+        <div style="padding-top:24px;">
+          <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;
+                      letter-spacing:1.2px;border-bottom:2px solid #e2e8f0;padding-bottom:8px;
+                      margin-bottom:14px;">
+            &#128203; BD Executive Briefing
+          </div>
+          <div style="background:#f0f7ff;border-left:4px solid #2563eb;border-radius:0 8px 8px 0;
+                      padding:14px 18px;font-size:14px;color:#1e293b;line-height:1.65;">
+            {{ executive_summary }}
+          </div>
+        </div>
+        {% endif %}
 
         {% if opportunities %}
         <!-- ── Section: Contract Opportunities ── -->
@@ -323,6 +343,8 @@ def build_email(
     news_items: list[dict[str, Any]],
     opportunities: list[dict[str, Any]],
     run_dt: datetime,
+    executive_summary: str = "",
+    trend_delta: int | None = None,
 ) -> str:
     """Render the Jinja2 HTML template and return the email body string."""
     env = Environment(loader=BaseLoader(), autoescape=True)
@@ -343,6 +365,8 @@ def build_email(
         high_count=high_count,
         opp_count=len(opportunities),
         news_count=len(news_items),
+        executive_summary=executive_summary,
+        trend_delta=trend_delta,
     )
 
 

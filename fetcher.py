@@ -1,12 +1,14 @@
 """
 fetcher.py — Pull defense news (RSS), contract opportunities (SAM.gov, optional),
-and contract award intelligence (USASpending.gov, no API key required).
+and contract award intelligence (USASpending.gov + FPDS, no API keys required).
 """
 
 import os
+import re
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any
+from urllib.parse import quote_plus
 
 import feedparser
 import requests
@@ -49,11 +51,13 @@ def _parse_feed_date(entry) -> datetime | None:
 # ──────────────────────────────────────────────────────────────────────────────
 
 def fetch_all_news() -> list[dict[str, Any]]:
-    """Fetch articles from all RSS feeds defined in company_profile.yaml."""
+    """Fetch articles from all RSS feeds defined in company_profile.yaml.
+    Deduplicates within the run by URL."""
     profile = _load_profile()
     feeds = profile.get("rss_feeds", [])
     cutoff = _cutoff_dt()
     items: list[dict[str, Any]] = []
+    seen_urls: set[str] = set()
 
     for feed_cfg in feeds:
         name = feed_cfg["name"]
@@ -75,16 +79,20 @@ def fetch_all_news() -> list[dict[str, Any]]:
                     or getattr(entry, "description", None)
                     or ""
                 )
-                # Strip HTML tags from summary for cleaner AI input
-                import re
                 summary = re.sub(r"<[^>]+>", " ", summary).strip()[:600]
+
+                url = entry.get("link", "")
+                if url and url in seen_urls:
+                    continue
+                if url:
+                    seen_urls.add(url)
 
                 items.append(
                     {
                         "type": "news",
                         "source": name,
                         "title": entry.get("title", "").strip(),
-                        "url": entry.get("link", ""),
+                        "url": url,
                         "summary": summary,
                         "published": published.isoformat() if published else "",
                     }
@@ -287,4 +295,81 @@ def fetch_usaspending_awards() -> list[dict[str, Any]]:
         )
 
     log.info("USASpending.gov total: %d awards fetched", len(awards))
+    return awards
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# FPDS — Federal Procurement Data System (no API key required)
+# ──────────────────────────────────────────────────────────────────────────────
+
+_FPDS_BASE = "https://www.fpds.gov/ezsearch/FEEDS/ATOM?FEEDNAME=AWARD&q="
+
+# Use the first 6 SAM search terms to avoid hammering the FPDS endpoint
+_FPDS_MAX_QUERIES = 6
+
+
+def fetch_fpds_awards() -> list[dict[str, Any]]:
+    """
+    Fetch recent contract awards from FPDS-NG Atom feeds.
+
+    Completely free — no registration or API key required.
+    Complements USASpending.gov with FPDS-specific metadata and
+    sometimes surfaces awards not yet indexed by USASpending.
+    """
+    profile = _load_profile()
+    terms = profile.get("sam_search_terms", [])[:_FPDS_MAX_QUERIES]
+    cutoff = _cutoff_dt()
+
+    awards: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+
+    for term in terms:
+        url = _FPDS_BASE + quote_plus(term)
+        try:
+            log.info("FPDS search: '%s'", term)
+            resp = requests.get(
+                url, timeout=15, headers={"User-Agent": "DefenseBDDigest/1.0"}
+            )
+            resp.raise_for_status()
+            parsed = feedparser.parse(resp.content)
+
+            for entry in parsed.entries:
+                link = entry.get("link", "")
+                if not link or link in seen_ids:
+                    continue
+                seen_ids.add(link)
+
+                published = _parse_feed_date(entry)
+                if published and published < cutoff:
+                    continue
+
+                title = (entry.get("title") or "").strip()
+                summary = re.sub(
+                    r"<[^>]+>",
+                    " ",
+                    (getattr(entry, "summary", None) or ""),
+                ).strip()[:600]
+
+                awards.append(
+                    {
+                        "type": "opportunity",
+                        "source": "FPDS",
+                        "title": title,
+                        "url": link,
+                        "agency": "",  # Claude extracts this from title/summary
+                        "naics": "",
+                        "set_aside": "",
+                        "notice_type": "Contract Award",
+                        "solicitation_number": "",
+                        "posted_date": published.isoformat() if published else "",
+                        "response_deadline": "",
+                        "description": summary,
+                        "notice_id": link,
+                    }
+                )
+
+        except Exception as exc:
+            log.warning("FPDS search failed for '%s': %s", term, exc)
+
+    log.info("FPDS total: %d unique awards fetched", len(awards))
     return awards

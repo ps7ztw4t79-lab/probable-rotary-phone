@@ -5,6 +5,9 @@ on:
     - cron: '0 12 * * 1'   # Every Monday at 12:00 UTC (8 AM ET)
   workflow_dispatch:        # Allow manual trigger from GitHub Actions UI
 
+permissions:
+  contents: write           # Required to commit seen_items.json back to repo
+
 jobs:
   send-digest:
     runs-on: ubuntu-latest
@@ -49,3 +52,12 @@ jobs:
           MIN_NEWS_SCORE: ${{ vars.MIN_NEWS_SCORE || '45' }}
           MIN_OPPORTUNITY_SCORE: ${{ vars.MIN_OPPORTUNITY_SCORE || '55' }}
           LOOKBACK_DAYS: '7'
+
+      - name: Save deduplication state
+        if: success()
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add seen_items.json
+          git diff --staged --quiet || git commit -m "chore: update digest state [skip ci]"
+          git push

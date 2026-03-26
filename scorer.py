@@ -182,6 +182,95 @@ def score_items(
     return scored
 
 
+def rescore_top_items(
+    items: list[dict[str, Any]],
+    top_n: int = 10,
+) -> list[dict[str, Any]]:
+    """
+    Take the already-scored top N items and run them through Claude Opus for
+    deeper, more actionable BD analysis. Haiku scores are kept; only the
+    rationale, recommended_action, and tags are upgraded.
+
+    This adds one Opus API call but produces significantly richer lead narratives
+    for the items that actually matter.
+    """
+    if not items:
+        return items
+
+    api_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
+    if not api_key:
+        return items
+
+    profile = _load_profile()
+    c = profile["company"]
+    top = sorted(items, key=lambda x: x.get("relevance_score", 0), reverse=True)[:top_n]
+    rest = items[top_n:] if len(items) > top_n else []
+
+    condensed = [
+        {
+            "index": i,
+            "title": item.get("title", ""),
+            "source": item.get("source", ""),
+            "agency": item.get("agency", ""),
+            "score": item.get("relevance_score", 0),
+            "lead_type": item.get("lead_type", ""),
+            "set_aside": item.get("set_aside", ""),
+            "description": (item.get("description") or item.get("summary", ""))[:400],
+            "url": item.get("url", ""),
+        }
+        for i, item in enumerate(top)
+    ]
+
+    prompt = f"""You are the BD director for a small defense subcontractor with these attributes:
+  Capabilities: {', '.join(c['capabilities'][:6])}
+  Contract vehicles: {', '.join(c.get('contract_vehicles', ['GSA Schedule', 'SeaPort-NxG']))}
+  Clearances: {', '.join(c.get('personnel_clearances', ['Secret', 'TS/SCI']))}
+  Target agencies: {', '.join(c['target_agencies'][:8])}
+  Primary focus: subcontracting under large primes; small business set-aside primes as secondary
+
+These are the week's TOP {len(top)} leads (already screened for relevance). For each:
+1. Write a 2-3 sentence rationale explaining the specific BD angle for THIS company
+2. Write a concrete recommended_action with a named office, specific person type to call,
+   or exact teaming move (e.g. "Contact Leidos' NAVAIR division BD team — they hold the
+   incumbent IDIQ and are likely to need a systems integration sub")
+3. List 3-5 precise tags
+
+Return JSON array only:
+[{{"index": 0, "rationale": "...", "recommended_action": "...", "tags": [...]}}]
+
+Items:
+{json.dumps(condensed, indent=2)}"""
+
+    try:
+        client = anthropic.Anthropic(api_key=api_key, timeout=90.0)
+        response = client.messages.create(
+            model="claude-opus-4-6",
+            max_tokens=3000,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        upgrades = _parse_scores(response.content[0].text)
+        upgrade_map = {u["index"]: u for u in upgrades}
+
+        upgraded_top = []
+        for i, item in enumerate(top):
+            enriched = dict(item)
+            if i in upgrade_map:
+                u = upgrade_map[i]
+                enriched["rationale"] = u.get("rationale", item.get("rationale", ""))
+                enriched["recommended_action"] = u.get(
+                    "recommended_action", item.get("recommended_action", "")
+                )
+                enriched["tags"] = u.get("tags", item.get("tags", []))
+            upgraded_top.append(enriched)
+
+        log.info("Opus deep-scored top %d items", len(upgraded_top))
+        return upgraded_top + rest
+
+    except Exception as exc:
+        log.warning("Opus rescore failed, keeping Haiku results: %s", exc)
+        return items
+
+
 def _fallback_scores(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Return items with zero scores when the API is unavailable."""
     result = []
