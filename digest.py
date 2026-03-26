@@ -199,17 +199,20 @@ def run(dry_run: bool = False) -> None:
     news_scored = score_items(news_prefiltered, item_type="news")
     opps_scored = score_items(opps_raw, item_type="opportunity")
 
-    min_news = _min_score("MIN_NEWS_SCORE", 45)
-    min_opp = _min_score("MIN_OPPORTUNITY_SCORE", 55)
+    # Haiku threshold — lenient, just culls obvious noise before Opus sees candidates
+    haiku_news = _min_score("MIN_NEWS_SCORE", 50)
+    haiku_opp = _min_score("MIN_OPPORTUNITY_SCORE", 55)
+    # Final threshold — Opus enforces this bar; only items above this go in the email
+    final_threshold = 75
 
     news_filtered = sorted(
-        [i for i in news_scored if i.get("relevance_score", 0) >= min_news],
+        [i for i in news_scored if i.get("relevance_score", 0) >= haiku_news],
         key=lambda x: x["relevance_score"],
         reverse=True,
     )[:20]
 
     opps_filtered = sorted(
-        [i for i in opps_scored if i.get("relevance_score", 0) >= min_opp],
+        [i for i in opps_scored if i.get("relevance_score", 0) >= haiku_opp],
         key=lambda x: x["relevance_score"],
         reverse=True,
     )[:12]
@@ -218,9 +221,11 @@ def run(dry_run: bool = False) -> None:
     log.info("Step 3/4 — Deep-scoring top leads with Claude Opus …")
     all_scored = news_filtered + opps_filtered
     all_rescored = rescore_top_items(all_scored, top_n=10)
-    # Split back
-    news_final = [i for i in all_rescored if i.get("type") == "news"]
-    opps_final = [i for i in all_rescored if i.get("type") == "opportunity"]
+    # Opus applies the strict 75 bar via revised scores — filter here
+    news_final = [i for i in all_rescored
+                  if i.get("type") == "news" and i.get("relevance_score", 0) >= final_threshold]
+    opps_final = [i for i in all_rescored
+                  if i.get("type") == "opportunity" and i.get("relevance_score", 0) >= final_threshold]
 
     high_count = sum(
         1 for i in all_rescored if i.get("relevance_score", 0) >= 70

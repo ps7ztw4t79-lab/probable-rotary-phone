@@ -49,8 +49,9 @@ jobs:
           SAM_GOV_API_KEY: ${{ secrets.SAM_GOV_API_KEY }}
 
           # ── Tuning ────────────────────────────────────────────────────────
-          MIN_NEWS_SCORE: ${{ vars.MIN_NEWS_SCORE || '75' }}
-          MIN_OPPORTUNITY_SCORE: ${{ vars.MIN_OPPORTUNITY_SCORE || '75' }}
+          # Haiku pre-filter thresholds — lenient, Opus enforces the real 75 bar
+          MIN_NEWS_SCORE: ${{ vars.MIN_NEWS_SCORE || '50' }}
+          MIN_OPPORTUNITY_SCORE: ${{ vars.MIN_OPPORTUNITY_SCORE || '55' }}
           LOOKBACK_DAYS: ${{ vars.LOOKBACK_DAYS || '7' }}
 
       - name: Save deduplication state

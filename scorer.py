@@ -320,14 +320,17 @@ def rescore_top_items(
   Primary focus: subcontracting under large primes; small business set-aside primes as secondary
 
 These are the week's TOP {len(top)} leads (already screened for relevance). For each:
-1. Write a 2-3 sentence rationale explaining the specific BD angle for THIS company
-2. Write a concrete recommended_action with a named office, specific person type to call,
-   or exact teaming move (e.g. "Contact Leidos' NAVAIR division BD team — they hold the
-   incumbent IDIQ and are likely to need a systems integration sub")
-3. List 3-5 precise tags
+1. Assign a REVISED relevance_score (0-100) using the same strict criteria — a 75 must be
+   genuinely actionable TODAY for a ~$5M Huntsville company. Upgrade items Haiku undersold;
+   downgrade items that look weaker on closer read.
+2. Write a 2-3 sentence rationale explaining the specific BD angle for THIS company
+3. Write a concrete recommended_action with a named office, specific person type to call,
+   or exact teaming move (e.g. "Contact IRT/IRTC BD — they hold the incumbent and would
+   bring us in pre-award on a recompete")
+4. List 3-5 precise tags
 
 Return JSON array only:
-[{{"index": 0, "rationale": "...", "recommended_action": "...", "tags": [...]}}]
+[{{"index": 0, "relevance_score": 82, "rationale": "...", "recommended_action": "...", "tags": [...]}}]
 
 Items:
 {json.dumps(condensed, indent=2)}"""
@@ -347,6 +350,9 @@ Items:
             enriched = dict(item)
             if i in upgrade_map:
                 u = upgrade_map[i]
+                # Apply Opus revised score if provided (Opus enforces the 75 bar)
+                if "relevance_score" in u:
+                    enriched["relevance_score"] = int(u["relevance_score"])
                 enriched["rationale"] = u.get("rationale", item.get("rationale", ""))
                 enriched["recommended_action"] = u.get(
                     "recommended_action", item.get("recommended_action", "")

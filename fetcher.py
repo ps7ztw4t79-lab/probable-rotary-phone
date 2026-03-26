@@ -324,11 +324,14 @@ def fetch_fpds_awards() -> list[dict[str, Any]]:
     """
     Fetch recent contract awards from FPDS-NG Atom feeds.
 
-    Completely free — no registration or API key required.
-    Complements USASpending.gov with FPDS-specific metadata and
-    sometimes surfaces awards not yet indexed by USASpending.
+    NOTE: FPDS blocks GitHub Actions IP ranges with 400 errors on all queries.
+    Returns empty list until a working access method is identified.
     """
-    cutoff = _cutoff_dt()
+    log.info("FPDS: skipped (API blocks GitHub Actions IPs)")
+    return []
+
+    # --- unreachable until FPDS access is resolved ---
+    cutoff = _cutoff_dt()  # noqa: F841
 
     awards: list[dict[str, Any]] = []
     seen_ids: set[str] = set()
@@ -412,11 +415,13 @@ def fetch_sbir_topics() -> list[dict[str, Any]]:
     """
     Fetch open DoD SBIR/STTR solicitation topics from SBIR.gov.
 
-    Completely free — no API key required.
-    Filters for Army, DARPA, DEVCOM, MDA and topics matching our core
-    capabilities (ISR, DE, AI/ML). These represent pre-solicitation
-    opportunities that typically appear here before any other source.
+    NOTE: api.sbir.gov DNS does not resolve from GitHub Actions.
+    Returns empty list until the correct public endpoint is confirmed.
     """
+    log.info("SBIR.gov: skipped (API endpoint unresolvable — needs investigation)")
+    return []
+
+    # --- unreachable until correct SBIR endpoint is confirmed ---
     params = {
         "rows": 50,
         "program": "SBIR",
