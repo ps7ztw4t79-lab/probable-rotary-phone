@@ -318,25 +318,26 @@ def fetch_usaspending_awards() -> list[dict[str, Any]]:
 # USASpending.gov — Expiring Contract / Recompete Watch (no API key required)
 # ──────────────────────────────────────────────────────────────────────────────
 
-def fetch_expiring_contracts(days_ahead: int = 90) -> list[dict[str, Any]]:
+def fetch_expiring_contracts(days_min: int = 180, days_max: int = 730) -> list[dict[str, Any]]:
     """
-    Find DoD contracts in our NAICS space expiring within `days_ahead` days.
+    Find DoD contracts in our NAICS space expiring 6 months to 2 years from now.
 
-    These are prime recompete candidates — the incumbent's work is ending and
-    a follow-on contract will likely be competed.  Results are returned with
-    a 'recompete' type so the email template can badge them distinctly.
+    This horizon surfaces strategic recompete candidates early enough to build
+    relationships before the RFP drops — ahead of GovWin and most competitors.
+    Results carry a 'recompete' type for distinct email rendering.
     """
     profile = _load_profile()
     naics_codes = [
         str(n) for n in profile.get("company", {}).get("naics_codes", _DEFAULT_NAICS)
     ]
     now = datetime.now(timezone.utc)
-    expire_cutoff = now + timedelta(days=days_ahead)
+    expire_min = now + timedelta(days=days_min)
+    expire_max = now + timedelta(days=days_max)
 
-    # Query a 4-year award window — captures 1-, 2-, 3-, and 4-year contracts
-    # that might be ending soon.  Sort by end date ascending so soonest-expiring
-    # results appear on page 1.
-    start_date = (now - timedelta(days=4 * 365)).strftime("%Y-%m-%d")
+    # Query a 5-year award window to capture contracts of all durations that
+    # fall in our 6mo–2yr expiry horizon.  Sort ascending so soonest-expiring
+    # results appear on page 1 (allows easy Python filtering).
+    start_date = (now - timedelta(days=5 * 365)).strftime("%Y-%m-%d")
     end_date = now.strftime("%Y-%m-%d")
 
     payload = {
@@ -365,7 +366,7 @@ def fetch_expiring_contracts(days_ahead: int = 90) -> list[dict[str, Any]]:
     }
 
     try:
-        log.info("USASpending.gov: scanning for contracts expiring within %d days", days_ahead)
+        log.info("USASpending.gov: scanning for recompetes expiring %d–%d days out", days_min, days_max)
         resp = requests.post(_USASPENDING_URL, json=payload, timeout=20)
         resp.raise_for_status()
         results = resp.json().get("results", [])
@@ -383,8 +384,8 @@ def fetch_expiring_contracts(days_ahead: int = 90) -> list[dict[str, Any]]:
         except ValueError:
             continue
 
-        # Only contracts expiring in the future within our window
-        if not (now <= end_dt <= expire_cutoff):
+        # Only contracts in the 6mo–2yr strategic horizon
+        if not (expire_min <= end_dt <= expire_max):
             continue
 
         days_remaining = (end_dt - now).days
@@ -423,7 +424,10 @@ def fetch_expiring_contracts(days_ahead: int = 90) -> list[dict[str, Any]]:
 
     # Return soonest-expiring first, cap at 15
     expiring.sort(key=lambda x: x["days_remaining"])
-    log.info("USASpending expiring contracts: %d found within %d days", len(expiring), days_ahead)
+    log.info(
+        "USASpending recompetes: %d found in %d–%d day horizon",
+        len(expiring), days_min, days_max,
+    )
     return expiring[:15]
 
 

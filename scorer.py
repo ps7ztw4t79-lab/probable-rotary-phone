@@ -71,6 +71,7 @@ def _build_system_prompt(profile: dict) -> str:
     depth = c.get("technical_depth", {})
     programs = c.get("priority_programs", [])
     ideal = c.get("ideal_lead", "")
+    vocab = profile.get("tag_vocabulary", {})
 
     de_depth = ', '.join(depth.get("directed_energy", []))
     isr_depth = ', '.join(depth.get("isr_exploitation", []))
@@ -155,7 +156,11 @@ IMPORTANT
   - SBIR Phase I/II and OTA/BAA at DEVCOM, ARL, AFC, or MDA are HIGH value — AI SME on staff
   - DOJ/law enforcement ISR work: score 65-75, note IRT relationship is the access path
   - recommended_action must name a specific office, program, or prime — never generic
-  - tags: 2-5 short labels (program name, tech area, agency, contract type)"""
+
+TAG VOCABULARY — choose tags ONLY from this list (pick 2-5 most relevant):
+  Technology: {', '.join(vocab.get('technology', []))}
+  Agency:     {', '.join(vocab.get('agency', []))}
+  Signal:     {', '.join(vocab.get('signal', []))}"""
 
     feedback_ctx = _load_feedback_context()
     if feedback_ctx:
@@ -378,6 +383,7 @@ def rescore_top_items(
 
     profile = _load_profile()
     c = profile["company"]
+    vocab = profile.get("tag_vocabulary", {})
     top = sorted(items, key=lambda x: x.get("relevance_score", 0), reverse=True)[:top_n]
     rest = items[top_n:] if len(items) > top_n else []
 
@@ -409,7 +415,10 @@ These are the week's TOP {len(top)} leads (already screened for relevance). For 
 2. ONE sentence: the specific BD angle for this company — no fluff
 3. ONE sentence recommended_action naming a specific office, person type, or move
    (e.g. "Contact IRT/IRTC BD for pre-award teaming on recompete")
-4. 3-4 tags
+4. 2-4 tags chosen ONLY from this vocabulary:
+   Technology: {', '.join(vocab.get('technology', []))}
+   Agency:     {', '.join(vocab.get('agency', []))}
+   Signal:     {', '.join(vocab.get('signal', []))}
 
 Return JSON array only:
 [{{"index": 0, "relevance_score": 82, "rationale": "...", "recommended_action": "...", "tags": [...]}}]

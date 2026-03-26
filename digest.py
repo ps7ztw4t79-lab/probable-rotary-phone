@@ -253,11 +253,13 @@ def run(dry_run: bool = False) -> None:
     log.info("Step 3/4 — Deep-scoring top leads with Claude Opus …")
     all_scored = news_filtered + opps_filtered
     all_rescored = rescore_top_items(all_scored, top_n=15)
-    # Opus applies the strict 75 bar via revised scores — filter here
+    # Opus applies the strict 70 bar via revised scores — filter and separate by type
     news_final = [i for i in all_rescored
                   if i.get("type") == "news" and i.get("relevance_score", 0) >= final_threshold]
     opps_final = [i for i in all_rescored
                   if i.get("type") == "opportunity" and i.get("relevance_score", 0) >= final_threshold]
+    recompetes_final = [i for i in all_rescored
+                        if i.get("type") == "recompete" and i.get("relevance_score", 0) >= final_threshold]
 
     high_count = sum(
         1 for i in all_rescored if i.get("relevance_score", 0) >= 70
@@ -266,22 +268,36 @@ def run(dry_run: bool = False) -> None:
         (high_count - last_high_count) if last_high_count is not None else None
     )
     log.info(
-        "  News: %d  |  Opportunities: %d  |  High-priority: %d  |  Trend: %s",
-        len(news_final),
-        len(opps_final),
-        high_count,
+        "  News: %d  |  Opps: %d  |  Recompetes: %d  |  High-priority: %d  |  Trend: %s",
+        len(news_final), len(opps_final), len(recompetes_final), high_count,
         f"{trend_delta:+d} vs last week" if trend_delta is not None else "first run",
     )
 
     # ── 4. Build + send email ─────────────────────────────────────────────────
-    quiet_day = not news_final and not opps_final
+    quiet_day = not news_final and not opps_final and not recompetes_final
     if quiet_day:
         log.info("No items above threshold today — sending quiet-day email.")
+
+    # Build subject teaser from the top-scoring item across all categories
+    all_final = sorted(
+        news_final + opps_final + recompetes_final,
+        key=lambda x: x.get("relevance_score", 0), reverse=True,
+    )
+    if all_final and not quiet_day:
+        top_title = all_final[0].get("title", "")[:55].rstrip()
+        remainder = len(all_final) - 1
+        teaser_subject = (
+            f"BD Digest {run_dt.strftime('%b %d')} — {top_title}"
+            + (f" +{remainder}" if remainder > 0 else "")
+        )
+    else:
+        teaser_subject = None  # quiet day subject handled below
 
     log.info("Step 4/4 — Building email …")
     html = build_email(
         news_items=news_final,
         opportunities=opps_final,
+        recompetes=recompetes_final,
         run_dt=run_dt,
         trend_delta=trend_delta,
         quiet_day=quiet_day,
@@ -297,9 +313,9 @@ def run(dry_run: bool = False) -> None:
     log.info("Sending email …")
     try:
         subject = (
-            f"Defense BD Digest — Quiet Day {run_dt.strftime('%b %d')}"
+            f"BD Digest {run_dt.strftime('%b %d')} — Quiet Day"
             if quiet_day
-            else None  # send_email uses its default date subject
+            else teaser_subject
         )
         send_email(html, subject=subject)
         log.info("Digest sent successfully.")

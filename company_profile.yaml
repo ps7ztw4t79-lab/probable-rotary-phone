@@ -492,9 +492,59 @@ rss_feeds:
     url: "https://news.usni.org/feed"
   - name: "Air Force Magazine"
     url: "https://www.airforcemag.com/feed/"
+  - name: "DARPA News"
+    url: "https://www.darpa.mil/feeds/news.xml"
+  - name: "AFWERX"
+    url: "https://afwerx.com/feed/"
 
 # ──────────────────────────────────────────────────────────────────────────────
-# SAM.gov search queries — each term spawns one API call
+# Canonical tag vocabulary — Claude must choose tags from this list
+# Short labels that map to real capability areas and target agencies/signals
+# ──────────────────────────────────────────────────────────────────────────────
+tag_vocabulary:
+  technology:
+    - "AI/ML"
+    - "Edge AI"
+    - "FPGA"
+    - "Firmware"
+    - "ISR"
+    - "Multi-INT"
+    - "SIGINT"
+    - "ELINT"
+    - "Sensor Fusion"
+    - "IC Threat M&S"
+    - "Directed Energy"
+    - "HEL-D"
+    - "HWIL"
+    - "SIL"
+    - "T&E"
+    - "Live-fire"
+    - "MBSE"
+    - "C4ISR"
+    - "Targeting"
+    - "SE&I"
+    - "SETA"
+    - "Digital Eng"
+  agency:
+    - "Army G-2"
+    - "MSIC"
+    - "MDA"
+    - "DARPA"
+    - "DEVCOM"
+    - "AFC"
+    - "ODNI"
+    - "NGA"
+    - "Army AFC"
+    - "SOCOM"
+  signal:
+    - "SBIR"
+    - "OTA"
+    - "BAA"
+    - "Sources Sought"
+    - "RFI"
+    - "Recompete"
+    - "Sub Opportunity"
+    - "Industry Day"
 # ──────────────────────────────────────────────────────────────────────────────
 sam_search_terms:
   # Active customer / recompete watch — HIGHEST priority
