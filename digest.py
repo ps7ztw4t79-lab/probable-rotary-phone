@@ -202,7 +202,7 @@ def run(dry_run: bool = False) -> None:
 
     # Haiku threshold — lenient, just culls obvious noise before Opus sees candidates
     haiku_news = _min_score("MIN_NEWS_SCORE", 50)
-    haiku_opp = _min_score("MIN_OPPORTUNITY_SCORE", 55)
+    haiku_opp = _min_score("MIN_OPPORTUNITY_SCORE", 50)
     # Final threshold — Opus enforces this bar; only items above this go in the email
     final_threshold = 75
 

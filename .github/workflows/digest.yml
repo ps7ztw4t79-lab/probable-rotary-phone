@@ -51,7 +51,7 @@ jobs:
           # ── Tuning ────────────────────────────────────────────────────────
           # Haiku pre-filter thresholds — lenient, Opus enforces the real 75 bar
           MIN_NEWS_SCORE: ${{ vars.MIN_NEWS_SCORE || '50' }}
-          MIN_OPPORTUNITY_SCORE: ${{ vars.MIN_OPPORTUNITY_SCORE || '55' }}
+          MIN_OPPORTUNITY_SCORE: ${{ vars.MIN_OPPORTUNITY_SCORE || '50' }}
           LOOKBACK_DAYS: ${{ vars.LOOKBACK_DAYS || '7' }}
           # Set to 'true' to skip deduplication (useful for testing)
           SKIP_DEDUP: ${{ vars.SKIP_DEDUP || 'false' }}
