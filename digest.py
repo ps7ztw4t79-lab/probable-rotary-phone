@@ -78,13 +78,19 @@ def _keyword_prefilter(items: list[dict], max_items: int = 60) -> list[dict]:
     high = [k.lower() for k in kw.get("high_priority", [])]
     medium = [k.lower() for k in kw.get("medium_priority", [])]
 
+    exclude = [k.lower() for k in kw.get("exclude_terms", [])]
+
     def _score(item: dict) -> int:
         text = (item.get("title", "") + " " + item.get("summary", "")).lower()
+        # Hard-exclude items matching irrelevant categories
+        if any(k in text for k in exclude):
+            return -1
         return sum(2 for k in high if k in text) + sum(1 for k in medium if k in text)
 
     ranked = sorted(items, key=_score, reverse=True)
     hits = [i for i in ranked if _score(i) > 0]
     no_hits = [i for i in ranked if _score(i) == 0]
+    # Items scoring -1 are excluded entirely
     result = (hits + no_hits)[:max_items]
     log.info("  Keyword pre-filter: %d → %d items", len(items), len(result))
     return result

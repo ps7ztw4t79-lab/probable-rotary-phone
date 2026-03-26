@@ -9,54 +9,65 @@ company:
   name: "[Your Company]"   # kept anonymous — update if desired
 
   description: >
-    A small business (no special set-aside designation) specializing in Systems
-    Integration and Engineering & R&D. Primarily pursues subcontracting
-    opportunities under large prime contractors, leveraging personnel with
-    active Secret and TS/SCI clearances to support classified DoD and
-    Intelligence Community programs. Holds a GSA Schedule and SeaPort-NxG
-    contract vehicle. Capabilities span C4ISR integration, sensor fusion,
-    platform integration, SETA, test & evaluation, and digital engineering /
-    MBSE. Growing into autonomous systems / AI-ML, electronic warfare,
-    directed energy, and unmanned systems.
+    An early-stage small business (under $5M revenue, no special set-aside
+    designation) headquartered in Huntsville, AL, with staff available in
+    San Diego CA, Dayton OH, and the DC/Northern Virginia/Maryland corridor.
+    Specializes in Systems Integration and Engineering & R&D with proven
+    experience on Army High Energy Laser (HEL-D) programs and Army ISR data
+    exploitation / sensor fusion. Primarily pursues subcontracting positions
+    under large prime contractors and small-business prime contracts in the
+    $1M–$10M range. Personnel hold active Secret and TS/SCI clearances,
+    enabling work on classified programs. Holds GSA Schedule and SeaPort-NxG
+    contract vehicles. Growing into autonomous systems / AI-ML, broader
+    directed energy / EW, MBSE, and unmanned systems.
 
   # Current core capabilities — what you can bid on today
   capabilities:
+    - High Energy Laser (HEL) systems engineering and T&E (HEL-D program)
+    - Army ISR data exploitation and sensor fusion
     - Systems Integration
     - Engineering & R&D
-    - Model-Based Systems Engineering (MBSE)
-    - Digital Engineering
+    - C4ISR Integration
+    - Sensor Fusion and Multi-INT exploitation
+    - Platform Integration
     - Systems Engineering & Technical Assistance (SETA)
     - Test & Evaluation (T&E)
-    - C4ISR Integration
-    - Sensor Fusion
-    - Platform Integration
+    - Model-Based Systems Engineering (MBSE)
+    - Digital Engineering
     - Technical Program Management
 
-  # Strategic growth areas — opportunities here should score higher even if
-  # they slightly stretch current capability
+  # Strategic growth areas — score higher even if capability slightly stretches
   future_growth_areas:
-    - Autonomous Systems and AI/ML for defense applications
-    - Electronic Warfare (EW) and Directed Energy (DE)
+    - Directed Energy (DE) — expanding beyond HEL-D to other Army/Navy DE programs
+    - Electronic Warfare (EW) — leveraging ISR and sensor expertise
+    - Autonomous Systems and AI/ML — building on ISR exploitation background
+    - Unmanned Systems (UAS / UGV / USV) and Counter-UAS (C-UAS)
+    - TITAN / DCGS-A and next-gen Army ISR architecture
     - Digital Engineering and MBSE pipelines
-    - Unmanned Systems (UAS / UGV / USV)
-    - Counter-UAS (C-UAS)
-    - AI-enabled ISR and decision support
+    - AI-enabled ISR and automated target recognition
 
-  # Primary DoD / IC customers you pursue
+  # Primary DoD / IC customers — ranked by priority
   target_agencies:
-    - Army (PEO C3T, AFC, DEVCOM, ARL)
-    - Navy (NAVAIR, NAVSEA, ONR, PEO IWS)
-    - Air Force / Space Force (AFRL, AFLCMC, PEO Digital)
+    - Army (DEVCOM, ARL, PEO Aviation, AFC, PEO IEW&S, Redstone Arsenal)
+    - Army Futures Command (AFC)
+    - DARPA
+    - MDA (Missile Defense Agency — Redstone Arsenal)
+    - Air Force (AFRL, Wright-Patterson — Dayton presence)
+    - Navy (NAVAIR, NAVSEA, ONR — SeaPort-NxG vehicle)
     - Marine Corps (MCSC)
     - NSA
     - DIA
     - NGA
-    - ODNI
-    - SOCOM
-    - JSOC
-    - DARPA
-    - MDA (Missile Defense Agency)
+    - SOCOM / JSOC
     - NRO
+
+  # Office locations — used to prioritize local program office opportunities
+  locations:
+    primary: "Huntsville, AL (Redstone Arsenal corridor)"
+    expanding_to:
+      - "San Diego / Southern California (NAVWAR, SPAWAR)"
+      - "Dayton, OH / Wright-Patterson (AFRL, AFLCMC)"
+      - "DC / Northern Virginia / Maryland (Pentagon, IC corridor)"
 
   # Contract vehicles currently held
   contract_vehicles:
@@ -68,14 +79,17 @@ company:
     - Secret
     - TS/SCI
 
+  # Opportunity size filter — minimum worth tracking
+  min_opportunity_value: "$1M"
+  target_opportunity_range: "$1M – $10M (subcontracts and small primes)"
+
   contract_focus:
     # Set-aside types eligible to pursue as PRIME
-    # (no SDVOSB/VOSB/WOSB/8(a) — general small business only)
     eligible_set_asides:
       - Small Business (Total SB)
-      - Unrestricted (full and open)
+      - Unrestricted (full and open — especially for subcontract positions)
 
-    # Set-aside types NOT eligible as prime — flag for subcontracting angle
+    # Set-aside types NOT eligible as prime — flag for subcontracting angle only
     ineligible_set_asides:
       - SDVOSB
       - VOSB
@@ -84,16 +98,24 @@ company:
       - WOSB
       - EDWOSB
 
-    # Opportunity types to watch
+    # Opportunity types to watch — in priority order
     pursuit_types:
-      - Subcontracting under large prime contractors (PRIMARY focus)
-      - Small Business set-aside prime contracts
-      - SeaPort-NxG task orders (Navy/USMC)
+      - Subcontracting under large prime contractors (PRIMARY near-term focus)
+      - Small Business set-aside prime contracts ($1M–$10M)
+      - SBIR / STTR Phase I and II (directed energy, ISR, autonomy)
+      - SeaPort-NxG task orders (Navy/USMC engineering services)
       - GSA Schedule task orders
-      - SBIR / STTR Phase I and II
-      - Other Transaction Authority (OTA)
-      - Broad Agency Announcements (BAA)
+      - Other Transaction Authority (OTA) — rapid prototyping
+      - Broad Agency Announcements (BAA) — DEVCOM, ARL, DARPA
       - Classified program subcontracts (TS/SCI billets)
+
+  # Categories to EXCLUDE — never relevant, filter out before scoring
+  exclude_categories:
+    - Military healthcare / medical systems
+    - Logistics and supply chain management
+    - Facilities / MILCON / construction
+    - Pure IT helpdesk and desktop support
+    - Food service / base operations support
 
   # NAICS codes that align with your capabilities
   naics_codes:
@@ -112,52 +134,66 @@ company:
 keywords:
   # Items containing any of these terms are VERY likely relevant
   high_priority:
+    # Directed Energy / HEL — core experience
+    - high energy laser
+    - HEL-D
+    - HEL-TVD
+    - DE-MSHORAD
+    - directed energy
+    - laser weapon
+    - high power laser
+    - solid state laser
+    - laser lethality
+    # ISR / Sensor exploitation — core experience
+    - ISR exploitation
+    - sensor fusion
+    - multi-INT
+    - DCGS-A
+    - TITAN ISR
+    - PEO IEW&S
+    - ISR data
+    - target recognition
+    # Growth areas
     - autonomous systems
     - autonomy
     - artificial intelligence
     - machine learning
     - AI/ML
     - electronic warfare
-    - EW
-    - directed energy
-    - high-energy laser
-    - model-based systems engineering
-    - MBSE
-    - digital engineering
-    - digital twin
-    - systems integration
-    - C4ISR
-    - ISR
     - unmanned aerial
-    - unmanned systems
     - UAS
-    - sUAS
     - counter-UAS
     - C-UAS
-    - SIGINT
-    - ELINT
-    - sensor fusion
+    - MBSE
+    - digital engineering
+    # Key program offices / locations
+    - Redstone Arsenal
+    - DEVCOM
+    - Army Futures Command
+    - C4ISR
     - SOCOM
-    - special operations
-    - joint all-domain
     - JADC2
-    - PNT
-    - resilient communications
 
   # Items containing these terms may be relevant — let the AI decide
   medium_priority:
-    - engineering services
+    - systems integration
     - systems engineering
-    - technical support
+    - engineering services
     - research and development
     - test and evaluation
+    - SETA
     - program support
-    - defense contractor
-    - DoD
-    - intelligence community
+    - ISR
+    - EW
+    - directed energy
+    - SIGINT
+    - ELINT
+    - PNT
+    - resilient communications
+    - special operations
     - DARPA
     - AFRL
-    - Army Futures Command
+    - ARL
     - NAVAIR
     - NAVSEA
     - program executive office
@@ -166,9 +202,23 @@ keywords:
     - SBIR
     - subcontract
     - teaming
-    - integration
-    - platform
     - multi-domain
+    - joint all-domain
+    - Huntsville
+
+  # Terms that strongly indicate an irrelevant item — used to deprioritize
+  exclude_terms:
+    - medical
+    - healthcare
+    - electronic health record
+    - supply chain management
+    - logistics
+    - MILCON
+    - construction
+    - facilities management
+    - food service
+    - help desk
+    - desktop support
 
 # ──────────────────────────────────────────────────────────────────────────────
 # News Sources (RSS) — add / remove feeds here
@@ -199,17 +249,17 @@ rss_feeds:
 # SAM.gov search queries — each term spawns one API call
 # ──────────────────────────────────────────────────────────────────────────────
 sam_search_terms:
-  - "systems integration defense"
-  - "autonomous systems DoD"
-  - "electronic warfare engineering"
-  - "directed energy research"
-  - "model-based systems engineering MBSE"
-  - "digital engineering DoD"
-  - "C4ISR integration"
-  - "ISR systems engineering"
-  - "unmanned systems integration"
-  - "AI machine learning defense"
-  - "SOCOM special operations engineering"
-  - "counter UAS C-UAS integration"
-  - "sensor fusion ISR"
-  - "SBIR systems integration"
+  - "high energy laser directed energy Army"
+  - "HEL directed energy systems engineering"
+  - "Army ISR exploitation sensor fusion"
+  - "DCGS-A TITAN ISR engineering"
+  - "systems integration Redstone Arsenal"
+  - "autonomous systems Army engineering"
+  - "electronic warfare systems integration"
+  - "C4ISR integration Army"
+  - "counter UAS directed energy"
+  - "SBIR directed energy laser"
+  - "SBIR ISR autonomy Army"
+  - "SeaPort-NxG engineering services"
+  - "DEVCOM ARL research engineering"
+  - "digital engineering MBSE defense"

@@ -35,41 +35,54 @@ def _load_profile() -> dict:
 def _build_system_prompt(profile: dict) -> str:
     c = profile["company"]
     kw = profile["keywords"]
+    locs = c.get("locations", {})
+    exclude = c.get("exclude_categories", [])
     return f"""You are a senior business development analyst for a small defense contractor.
 Your job is to evaluate defense news and government contract opportunities for sales lead potential.
 
 COMPANY PROFILE
-  Name: {c['name']}
   Description: {c['description']}
-  Current capabilities: {', '.join(c['capabilities'])}
-  Future growth areas: {', '.join(c['future_growth_areas'])}
-  Target agencies: {', '.join(c['target_agencies'])}
+  Stage: Early-stage, under $5M revenue — focus on achievable $1M–$10M opportunities
+  Headquarters: {locs.get('primary', 'Huntsville, AL')}
+  Also staffing: {', '.join(locs.get('expanding_to', []))}
+  Core capabilities: {', '.join(c['capabilities'][:8])}
+  Growth areas: {', '.join(c['future_growth_areas'][:5])}
+  Target agencies: {', '.join(c['target_agencies'][:8])}
+  Contract vehicles: {', '.join(c.get('contract_vehicles', []))}
+  Clearances: {', '.join(c.get('personnel_clearances', []))}
   Eligible set-asides: {', '.join(c['contract_focus']['eligible_set_asides'])}
-  INELIGIBLE set-asides (flag these): {', '.join(c['contract_focus']['ineligible_set_asides'])}
-  Pursuit types: {', '.join(c['contract_focus']['pursuit_types'])}
+  INELIGIBLE as prime (subcontract only): {', '.join(c['contract_focus']['ineligible_set_asides'])}
+  Primary pursuit: {c['contract_focus']['pursuit_types'][0]}
 
-HIGH-PRIORITY KEYWORDS: {', '.join(kw['high_priority'][:18])}
-MEDIUM-PRIORITY KEYWORDS: {', '.join(kw['medium_priority'][:12])}
+NEVER RELEVANT — score 0 and omit:
+  {', '.join(exclude)}
+
+HIGH-PRIORITY SIGNALS: {', '.join(kw['high_priority'][:25])}
+MEDIUM-PRIORITY SIGNALS: {', '.join(kw['medium_priority'][:15])}
 
 SCORING RULES
-  Opportunities (SAM.gov):
-    80-100 → Direct capability match + target agency + eligible set-aside → pursue NOW
-    60-79  → Good match, worth tracking for an upcoming RFP or teaming approach
-    40-59  → Partial match; potential subcontracting or teaming angle
-    <40    → Low relevance; omit from digest
+  Opportunities:
+    80-100 → Direct match to HEL/ISR/DE/autonomy capabilities + target agency,
+              appropriate set-aside, $1M+ value → pursue or respond NOW
+    60-79  → Good capability match, worth a teaming approach or tracking for RFP
+    40-59  → Partial match; viable subcontract or SBIR angle at a target agency
+    <40    → Low relevance; omit
 
   News articles:
-    80-100 → Hot lead signal: new program announcement, budget, or contract award
-              in our target agencies/technologies that demands immediate BD action
-    60-79  → Market intelligence that informs pipeline or reveals a teaming partner
-    40-59  → Useful background on industry trends in our sectors
-    <40    → Minimal relevance; omit from digest
+    80-100 → New program, budget decision, or award in our exact technology areas
+              (HEL, ISR exploitation, directed energy, autonomy) at a target agency
+    60-79  → Market intel revealing a teaming partner, budget trend, or follow-on
+    40-59  → Useful background on our sector
+    <40    → Omit
 
 IMPORTANT
-  - If a set-aside is 8(a), HUBZone, WOSB, or EDWOSB, note in rationale that the
-    company is not eligible as prime but may pursue as subcontractor.
-  - recommended_action must be specific and actionable (not generic advice).
-  - tags should be 2-5 short technology or capability labels."""
+  - This company has NO established prime relationships — always suggest a specific
+    named prime to approach for teaming (Northrop, Leidos, Raytheon BBN, L3Harris,
+    Boeing, SAIC, Booz Allen, Torch Technologies, COLSA, Dynetics/Leidos, etc.)
+  - Flag any item near Redstone Arsenal, DEVCOM, ARL, or PEO Aviation as HIGH value
+  - Flag SBIR/STTR/BAA/OTA in directed energy or ISR as HIGH value for early-stage BD
+  - recommended_action must name a specific office, prime, or person type to contact
+  - tags should be 2-5 short technology or program labels"""
 
 
 def _build_user_prompt(items: list[dict], item_type: str) -> str:
