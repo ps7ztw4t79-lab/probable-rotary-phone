@@ -251,19 +251,12 @@ def run(dry_run: bool = False) -> None:
         _update_and_save_state(state, news_raw, opps_raw, 0, run_dt)
         return
 
-    # ── 4. Executive summary + email ──────────────────────────────────────────
+    # ── 4. Build + send email ─────────────────────────────────────────────────
     log.info("Step 4/4 — Building email …")
-    api_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
-    with open("company_profile.yaml") as f:
-        profile = yaml.safe_load(f)
-
-    exec_summary = generate_executive_summary(news_final, opps_final, profile, api_key)
-
     html = build_email(
         news_items=news_final,
         opportunities=opps_final,
         run_dt=run_dt,
-        executive_summary=exec_summary,
         trend_delta=trend_delta,
     )
 

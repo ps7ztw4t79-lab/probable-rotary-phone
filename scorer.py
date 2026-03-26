@@ -404,14 +404,12 @@ def rescore_top_items(
   Primary focus: subcontracting under large primes; small business set-aside primes as secondary
 
 These are the week's TOP {len(top)} leads (already screened for relevance). For each:
-1. Assign a REVISED relevance_score (0-100) using the same strict criteria — a 75 must be
-   genuinely actionable TODAY for a ~$5M Huntsville company. Upgrade items Haiku undersold;
-   downgrade items that look weaker on closer read.
-2. Write a 2-3 sentence rationale explaining the specific BD angle for THIS company
-3. Write a concrete recommended_action with a named office, specific person type to call,
-   or exact teaming move (e.g. "Contact IRT/IRTC BD — they hold the incumbent and would
-   bring us in pre-award on a recompete")
-4. List 3-5 precise tags
+1. Assign a REVISED relevance_score (0-100) — a 75 must be genuinely actionable TODAY
+   for a ~$5M Huntsville company. Upgrade items Haiku undersold; downgrade weaker ones.
+2. ONE sentence: the specific BD angle for this company — no fluff
+3. ONE sentence recommended_action naming a specific office, person type, or move
+   (e.g. "Contact IRT/IRTC BD for pre-award teaming on recompete")
+4. 3-4 tags
 
 Return JSON array only:
 [{{"index": 0, "relevance_score": 82, "rationale": "...", "recommended_action": "...", "tags": [...]}}]

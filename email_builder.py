@@ -162,21 +162,6 @@ _TEMPLATE = """
     <tr>
       <td style="background:#ffffff;padding:0 36px 36px;border-radius:0 0 10px 10px;">
 
-        {% if executive_summary %}
-        <!-- ── Section: Executive Summary ── -->
-        <div style="padding-top:24px;">
-          <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;
-                      letter-spacing:1.2px;border-bottom:2px solid #e2e8f0;padding-bottom:8px;
-                      margin-bottom:14px;">
-            &#128203; BD Executive Briefing
-          </div>
-          <div style="background:#f0f7ff;border-left:4px solid #2563eb;border-radius:0 8px 8px 0;
-                      padding:14px 18px;font-size:14px;color:#1e293b;line-height:1.65;">
-            {{ executive_summary }}
-          </div>
-        </div>
-        {% endif %}
-
         {% if opportunities %}
         <!-- ── Section: Contract Opportunities ── -->
         <div style="padding-top:30px;">
@@ -218,51 +203,29 @@ _TEMPLATE = """
                   {{ opp.title | truncate(120) }}
                 </a>
                 <!-- Meta row -->
-                <div style="color:#64748b;font-size:12px;margin-bottom:10px;">
-                  {% if opp.agency %}<strong>Agency:</strong> {{ opp.agency }} &nbsp;|&nbsp;{% endif %}
-                  {% if opp.naics %}<strong>NAICS:</strong> {{ opp.naics }} &nbsp;|&nbsp;{% endif %}
-                  {% if opp.notice_type %}<strong>Type:</strong> {{ opp.notice_type }}{% endif %}
+                <div style="color:#64748b;font-size:12px;margin-bottom:8px;">
+                  {% if opp.agency %}{{ opp.agency }}{% endif %}
+                  {% if opp.notice_type %} &nbsp;·&nbsp; {{ opp.notice_type }}{% endif %}
+                  {% if opp.response_deadline %} &nbsp;·&nbsp; <span style="color:#dc2626;font-weight:600;">Due {{ fmt_date(opp.response_deadline) }}</span>{% endif %}
                 </div>
-                {% if opp.response_deadline %}
-                <div style="color:#dc2626;font-size:12px;font-weight:600;margin-bottom:8px;">
-                  &#9200; Response Due: {{ fmt_date(opp.response_deadline) }}
-                </div>
-                {% endif %}
-                <!-- Rationale -->
                 {% if opp.rationale %}
-                <div style="background:#f0f7ff;border-left:3px solid {{ sc }};
-                            padding:9px 13px;border-radius:0 5px 5px 0;
-                            font-size:13px;color:#334155;margin-bottom:9px;line-height:1.5;">
-                  <strong>Why it matters:</strong> {{ opp.rationale }}
+                <div style="font-size:13px;color:#334155;margin-bottom:7px;line-height:1.5;">
+                  {{ opp.rationale }}
                 </div>
                 {% endif %}
-                <!-- Action -->
                 {% if opp.recommended_action %}
-                <div style="font-size:13px;color:#15803d;font-weight:600;margin-bottom:8px;">
+                <div style="font-size:12.5px;color:#15803d;font-weight:600;margin-bottom:7px;">
                   &#8594; {{ opp.recommended_action }}
                 </div>
                 {% endif %}
-                <!-- Tags -->
-                {% if opp.tags %}
-                <div>
-                  {% for tag in opp.tags[:5] %}
-                  <span style="background:#dbeafe;color:#1d4ed8;font-size:11px;padding:2px 8px;
-                               border-radius:20px;margin-right:4px;">{{ tag }}</span>
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px;">
+                  {% for tag in opp.tags[:4] %}
+                  <span style="background:#dbeafe;color:#1d4ed8;font-size:11px;padding:2px 8px;border-radius:20px;">{{ tag }}</span>
                   {% endfor %}
-                </div>
-                {% endif %}
-                <!-- Link + Feedback -->
-                <div style="margin-top:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-                  <a href="{{ opp.url }}"
-                     style="color:#2563eb;font-size:12px;text-decoration:none;">
-                    View on SAM.gov &#8599;
-                  </a>
-                  <span style="color:#cbd5e1;font-size:11px;">|</span>
-                  <span style="font-size:11px;color:#94a3b8;">Helpful?</span>
-                  <a href="{{ opp._feedback_up | safe }}"
-                     style="font-size:13px;text-decoration:none;" title="Mark as useful">👍</a>
-                  <a href="{{ opp._feedback_down | safe }}"
-                     style="font-size:13px;text-decoration:none;" title="Mark as not relevant">👎</a>
+                  <a href="{{ opp.url }}" style="color:#2563eb;font-size:11px;text-decoration:none;margin-left:auto;">View &#8599;</a>
+                  <span style="color:#cbd5e1;">|</span>
+                  <a href="{{ opp._feedback_up | safe }}" style="font-size:13px;text-decoration:none;">👍</a>
+                  <a href="{{ opp._feedback_down | safe }}" style="font-size:13px;text-decoration:none;">👎</a>
                 </div>
               </td>
             </tr>
@@ -307,35 +270,24 @@ _TEMPLATE = """
                            text-decoration:none;line-height:1.35;display:block;margin-bottom:7px;">
                   {{ item.title | truncate(130) }}
                 </a>
-                <!-- Rationale -->
                 {% if item.rationale %}
-                <div style="background:#fef9ec;border-left:3px solid {{ sc }};
-                            padding:8px 12px;border-radius:0 5px 5px 0;
-                            font-size:12.5px;color:#374151;margin-bottom:7px;line-height:1.5;">
+                <div style="font-size:13px;color:#374151;margin-bottom:6px;line-height:1.5;">
                   {{ item.rationale }}
                 </div>
                 {% endif %}
-                <!-- Action -->
                 {% if item.recommended_action %}
-                <div style="font-size:12.5px;color:#15803d;font-weight:600;margin-bottom:7px;">
+                <div style="font-size:12.5px;color:#15803d;font-weight:600;margin-bottom:6px;">
                   &#8594; {{ item.recommended_action }}
                 </div>
                 {% endif %}
-                <!-- Tags + link + feedback -->
                 <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px;">
                   {% for tag in item.tags[:4] %}
-                  <span style="background:#dcfce7;color:#166534;font-size:11px;padding:2px 8px;
-                               border-radius:20px;">{{ tag }}</span>
+                  <span style="background:#dcfce7;color:#166534;font-size:11px;padding:2px 8px;border-radius:20px;">{{ tag }}</span>
                   {% endfor %}
-                  <a href="{{ item.url }}"
-                     style="color:#2563eb;font-size:11px;text-decoration:none;margin-left:auto;">
-                    Read more &#8599;
-                  </a>
-                  <span style="color:#cbd5e1;font-size:11px;">|</span>
-                  <a href="{{ item._feedback_up | safe }}"
-                     style="font-size:13px;text-decoration:none;" title="Mark as useful">👍</a>
-                  <a href="{{ item._feedback_down | safe }}"
-                     style="font-size:13px;text-decoration:none;" title="Mark as not relevant">👎</a>
+                  <a href="{{ item.url }}" style="color:#2563eb;font-size:11px;text-decoration:none;margin-left:auto;">Read &#8599;</a>
+                  <span style="color:#cbd5e1;">|</span>
+                  <a href="{{ item._feedback_up | safe }}" style="font-size:13px;text-decoration:none;">👍</a>
+                  <a href="{{ item._feedback_down | safe }}" style="font-size:13px;text-decoration:none;">👎</a>
                 </div>
                 <!-- Constituent articles (trend items only) -->
                 {% if item.constituent_titles %}
