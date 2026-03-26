@@ -31,7 +31,7 @@ from dotenv import load_dotenv
 # Load .env before importing modules that read env vars
 load_dotenv()
 
-from fetcher import fetch_all_news, fetch_sam_opportunities, fetch_usaspending_awards, fetch_fpds_awards
+from fetcher import fetch_all_news, fetch_sam_opportunities, fetch_usaspending_awards, fetch_fpds_awards, fetch_sbir_topics
 from scorer import score_items, rescore_top_items
 from email_builder import build_email, send_email
 
@@ -185,11 +185,12 @@ def run(dry_run: bool = False) -> None:
     sam_opps = fetch_sam_opportunities()
     usa_awards = fetch_usaspending_awards()
     fpds_awards = fetch_fpds_awards()
-    opps_raw = sam_opps + usa_awards + fpds_awards
+    sbir_topics = fetch_sbir_topics()
+    opps_raw = sam_opps + usa_awards + fpds_awards + sbir_topics
 
     log.info(
-        "  News: %d  |  SAM.gov: %d  |  USASpending: %d  |  FPDS: %d",
-        len(news_raw), len(sam_opps), len(usa_awards), len(fpds_awards),
+        "  News: %d  |  SAM.gov: %d  |  USASpending: %d  |  FPDS: %d  |  SBIR: %d",
+        len(news_raw), len(sam_opps), len(usa_awards), len(fpds_awards), len(sbir_topics),
     )
 
     # ── 2. Score with Haiku ───────────────────────────────────────────────────

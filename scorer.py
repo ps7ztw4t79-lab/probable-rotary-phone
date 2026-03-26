@@ -102,9 +102,27 @@ NEVER RELEVANT — score 0:
 CAP THESE AT 50 even if keywords match:
   {chr(10).join('  - ' + p for p in penalties)}
 
+PRE-SOLICITATION SIGNALS (score these HIGHER — arrive before GovWin sees them):
+  - Sources Sought notices, RFIs, Industry Day announcements, BAA pre-proposals
+  - Add +10 to the base score when the notice type is Sources Sought, RFI, or Industry Day
+  - These are the exact signals this company needs to act on before the RFP drops
+
+ACTIVE CUSTOMER RELATIONSHIPS (maximum priority):
+  - Army G-2 ISR Task Force: ACTIVE WORK under IRT subcontract. Any recompete signal = 90+.
+  - MSIC (Missile and Space Intelligence Center): CGO has direct relationships. Any MSIC opportunity = 85+.
+  - MDA (Missile Defense Agency, Huntsville): CGO has direct relationships. Any MDA engineering/ISR = 85+.
+
+PRIMARY PRIME (IRT is the established teaming path):
+  - Intuitive Research and Technology (IRT / IRTC) is our primary teaming partner.
+  - We are invited onto IRT pursuits PRE-AWARD — this is the most likely path to near-term work.
+  - If IRT/IRTC wins a contract or appears in an award, flag it 85+ and recommend contacting IRT BD.
+  - recommended_action should say "Contact IRT/IRTC BD" when IRT is the likely entry point.
+
 SCORING RULES — be precise, not generous:
-  90-100 → Named priority program (TITAN, Linchpin, DE-MSHORAD, HEL-D) + Huntsville/AFC/DEVCOM
-            + clear action this company can take (bid, call a prime, submit SBIR) → act TODAY
+  90-100 → G-2 ISR Task Force recompete signal OR named priority program (TITAN, Linchpin,
+            DE-MSHORAD, HEL-D) + Huntsville/AFC/DEVCOM + clear immediate action → act TODAY
+  85-89  → MSIC or MDA opportunity (CGO relationships) OR IRT/IRTC award in a relevant area
+            OR open SBIR topic from Army/DEVCOM/MDA touching AI/ISR/DE
   80-89  → Strong capability match (HEL lethality, fiber laser, SIGINT/ELINT, data fusion)
             at a target agency, with a specific procurement vehicle or award signal
   75-79  → Solid match to capability or growth area + target agency + actionable angle
@@ -120,11 +138,12 @@ DO NOT score 75+ if:
   - The opportunity is over $50M unrestricted prime (not accessible as a sub without a prime relationship)
 
 IMPORTANT
-  - No established prime relationships yet → always name a specific Huntsville-area or
-    program-aligned prime to approach: Northrop Grumman (DE), Leidos/Dynetics (Army ISR),
-    Torch Technologies (AFC small biz), COLSA (Redstone support), Raytheon (HEL/EW),
+  - PRIMARY recommended_action: "Contact IRT/IRTC BD" when IRT is the natural entry point
+  - Secondary primes to name when IRT is not the fit: Northrop Grumman (DE), Leidos/Dynetics
+    (Army ISR), Torch Technologies (AFC small biz), COLSA (Redstone support), Raytheon (HEL/EW),
     L3Harris (ISR), Boeing (AFC/Army aviation), Booz Allen (intel programs)
-  - SBIR Phase I/II and OTA/BAA at DEVCOM, ARL, or AFC are HIGH value for this stage
+  - SBIR Phase I/II and OTA/BAA at DEVCOM, ARL, AFC, or MDA are HIGH value — AI SME on staff
+  - DOJ/law enforcement ISR work: score 65-75, note IRT relationship is the access path
   - recommended_action must name a specific office, program, or prime — never generic
   - tags: 2-5 short labels (program name, tech area, agency, contract type)"""
 

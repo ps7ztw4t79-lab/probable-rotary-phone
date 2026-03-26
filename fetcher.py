@@ -373,3 +373,109 @@ def fetch_fpds_awards() -> list[dict[str, Any]]:
 
     log.info("FPDS total: %d unique awards fetched", len(awards))
     return awards
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# SBIR.gov — Open DoD Topics (no API key required)
+# ──────────────────────────────────────────────────────────────────────────────
+
+_SBIR_API = "https://www.sbir.gov/api/solicitations.json"
+
+# Components to filter for — anything with these strings in agency/branch is relevant
+_SBIR_TARGET_AGENCIES = {
+    "army", "darpa", "devcom", "mda", "missile defense",
+    "air force research", "afrl", "defense advanced",
+}
+
+# Keywords in topic title/description that indicate relevance to our capabilities
+_SBIR_RELEVANCE_TERMS = {
+    "isr", "intelligence", "surveillance", "reconnaissance",
+    "sensor fusion", "data fusion", "sigint", "elint",
+    "directed energy", "laser", "high energy",
+    "artificial intelligence", "machine learning", "autonomy", "autonomous",
+    "targeting", "electronic warfare", "ew ", " ew,",
+    "counter-uas", "counter uas", "c-uas",
+}
+
+
+def fetch_sbir_topics() -> list[dict[str, Any]]:
+    """
+    Fetch open DoD SBIR/STTR solicitation topics from SBIR.gov.
+
+    Completely free — no API key required.
+    Filters for Army, DARPA, DEVCOM, MDA and topics matching our core
+    capabilities (ISR, DE, AI/ML). These represent pre-solicitation
+    opportunities that typically appear here before any other source.
+    """
+    params = {
+        "rows": 50,
+        "program": "SBIR",
+        "agency": "DOD",
+        "status": "Open",
+    }
+
+    try:
+        log.info("SBIR.gov: fetching open DoD topics")
+        resp = requests.get(
+            _SBIR_API, params=params, timeout=20,
+            headers={"User-Agent": "DefenseBDDigest/1.0"},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as exc:
+        log.warning("SBIR.gov fetch failed: %s", exc)
+        return []
+
+    topics: list[dict[str, Any]] = []
+    seen_ids: set[str] = set()
+
+    # API may return list directly or nested under a key
+    records = data if isinstance(data, list) else data.get("solicitations", data.get("results", []))
+
+    for record in records:
+        # Extract fields — SBIR.gov field names vary slightly by endpoint version
+        topic_id = str(
+            record.get("solicitation_id") or record.get("id") or record.get("solicitation_number", "")
+        )
+        if not topic_id or topic_id in seen_ids:
+            continue
+        seen_ids.add(topic_id)
+
+        agency = (record.get("agency") or record.get("agency_name") or "").lower()
+        branch = (record.get("branch") or record.get("program_name") or "").lower()
+        title = (record.get("solicitation_title") or record.get("title") or "").strip()
+        description = (record.get("program_description") or record.get("description") or "")[:600].strip()
+        open_date = record.get("open_date") or record.get("posted_date") or ""
+        close_date = record.get("close_date") or record.get("due_date") or ""
+        url = record.get("solicitation_url") or record.get("url") or f"https://www.sbir.gov/node/{topic_id}"
+
+        # Filter: only agencies we care about
+        agency_text = f"{agency} {branch}"
+        if not any(t in agency_text for t in _SBIR_TARGET_AGENCIES):
+            continue
+
+        # Relevance filter: topic must touch our capabilities
+        combined = f"{title} {description}".lower()
+        if not any(t in combined for t in _SBIR_RELEVANCE_TERMS):
+            continue
+
+        topics.append(
+            {
+                "type": "opportunity",
+                "source": "SBIR.gov",
+                "title": f"[SBIR TOPIC] {title}" if title else f"[SBIR] {agency.upper()} Topic {topic_id}",
+                "url": url,
+                "agency": f"{record.get('agency', '')} {record.get('branch', '')}".strip(),
+                "naics": "",
+                "set_aside": "SBIR",
+                "notice_type": "SBIR Topic",
+                "solicitation_number": topic_id,
+                "posted_date": open_date,
+                "response_deadline": close_date,
+                "description": description,
+                "notice_id": topic_id,
+            }
+        )
+
+    log.info("SBIR.gov total: %d relevant open topics found", len(topics))
+    return topics

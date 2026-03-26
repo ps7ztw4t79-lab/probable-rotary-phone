@@ -15,11 +15,15 @@ company:
     Specializes in Systems Integration and Engineering & R&D with proven
     experience on Army High Energy Laser (HEL-D) programs and Army ISR data
     exploitation / sensor fusion. Primarily pursues subcontracting positions
-    under large prime contractors and small-business prime contracts in the
+    under large prime contractors — most significantly Intuitive Research and
+    Technology (IRT/IRTC), our primary teaming partner who invites us onto
+    pursuits pre-award. Also pursues small-business prime contracts in the
     $1M–$10M range. Personnel hold active Secret and TS/SCI clearances,
     enabling work on classified programs. Holds GSA Schedule and SeaPort-NxG
     contract vehicles. Growing into autonomous systems / AI-ML, broader
-    directed energy / EW, MBSE, and unmanned systems.
+    directed energy / EW, MBSE, and unmanned systems. Has demonstrated ISR
+    SME capability to the DOJ/law enforcement intelligence community via
+    word-of-mouth sourced opportunities.
 
   # Current core capabilities — what you can bid on today
   capabilities:
@@ -54,17 +58,86 @@ company:
     - Project Linchpin — AFC AI-enabled targeting and decision support
     - HEL-D (High Energy Laser Demonstrator) — Army directed energy
     - DE-MSHORAD (Directed Energy Maneuver SHORAD)
+    - Army G-2 ISR Task Force — ACTIVE WORK, recompete to watch
+    - ISR Task Force Army G-2 — existing subcontract through IRT, recompete window
+    - MSIC (Missile and Space Intelligence Center) — CGO has direct relationships
+    - MDA (Missile Defense Agency) — CGO has direct relationships, Huntsville based
     - Army Futures Command Cross-Functional Teams
     - PEO IEW&S (Intelligence, Electronic Warfare & Sensors)
     - DEVCOM / ARL directed energy and ISR research
 
+  # Active prime relationships — these companies bring us onto pursuits BEFORE award
+  # If any of these primes win or are rumored to be pursuing something, flag it high
+  primary_primes:
+    - name: "Intuitive Research and Technology (IRT / IRTC)"
+      notes: >
+        Primary teaming partner. We are invited onto pursuits pre-award — if not
+        invited before proposal submission, we are not brought in post-award.
+        Watch for IRT/IRTC contract wins, FPDS awards, and news mentions as
+        strong signals of potential sub opportunities. IRT also introduces us
+        to adjacent customers (e.g., DOJ ISR work introduced via IRT).
+      award_keywords: ["Intuitive Research", "IRTC", "IRT Huntsville"]
+
+  # Contracts actively held — watch for recompete signals
+  recompete_watch:
+    - program: "Army G-2 ISR Task Force"
+      notes: >
+        Current active subcontract through IRT. Watch for any Sources Sought,
+        RFI, or pre-solicitation notice from Army G-2 or DIA that matches ISR
+        exploitation / task force support. Any recompete signal here is
+        maximum priority — score 90+.
+      watch_terms: ["Army G-2", "ISR Task Force", "G-2 intelligence", "Army intelligence exploitation"]
+
+  # Adjacent markets we've proven we can play in
+  adjacent_markets:
+    - agency: "Department of Justice (DOJ)"
+      capability: "ISR exploitation SME support"
+      notes: >
+        Prior near-win on DOJ ISR work sourced entirely via word-of-mouth
+        through IRT. Provided senior SME experience. Path to DOJ work is
+        through network (IRT relationship), not formal procurement channels.
+        Score any DOJ intelligence-related work moderately (65-75) as a
+        relationship-dependent opportunity.
+    - agency: "Law enforcement intelligence community"
+      capability: "ISR and signals intelligence consulting"
+      notes: "FBI, DEA, NSD — ISR and SIGINT expertise has demonstrated value here."
+
   # The single ideal lead — calibrates what a 90+ score looks like
   ideal_lead: >
     An integration, prototyping, or ISR-related contract at Army Futures
-    Command in Huntsville, AL with an AI/ML component, in the $1M–$10M
-    range. Programs like TITAN, Project Linchpin, DE-MSHORAD, or any
-    AFC-directed prototyping OTA are the bullseye. A subcontract position
-    under a Huntsville-area prime on one of these programs is equally ideal.
+    Command, Army G-2, MSIC, or MDA in Huntsville, AL — especially anything
+    touching ISR exploitation, AI/ML targeting, or directed energy — in the
+    $1M–$10M range. Programs like TITAN, Project Linchpin, DE-MSHORAD, HEL-D,
+    or any AFC/G-2/MSIC prototyping OTA are the bullseye. A recompete signal
+    on the ISR Task Force work (G-2) is maximum priority. A subcontract
+    position under IRT on any of these programs is equally ideal.
+    Pre-solicitation signals (Sources Sought, RFI, Industry Day) score higher
+    than award notices — we need to be in the room before the RFP drops.
+
+  # SBIR strategy
+  sbir_strategy: >
+    AI SME on staff is actively seeking SBIR submissions. Highest-priority
+    SBIR topics: Army/DEVCOM AI for ISR, machine learning for targeting,
+    autonomous sensor exploitation, MDA AI for missile defense, AFC AI/ML
+    prototyping. Any open SBIR/STTR topic from Army, DEVCOM, MDA, or AFC
+    touching AI, ISR, sensor fusion, or directed energy should score 80+.
+
+  # CGO network — high-value relationship intelligence for scoring
+  cgo_network:
+    strong_connections:
+      - "MSIC (Missile and Space Intelligence Center) — direct relationships"
+      - "MDA (Missile Defense Agency) — direct relationships"
+      - "ISR Task Force Army G-2 — established presence"
+    events_attended:
+      - "All Huntsville-area events (AUSA Redstone, NDIA Huntsville, AFCEA Huntsville)"
+      - "Most Washington DC events (AUSA Annual, NDIA DC, AFCEA TechNet)"
+      - "Some events elsewhere"
+    notes: >
+      Word-of-mouth and relationship-sourced opportunities are our most likely
+      path to early pre-solicitation intel. Score any pre-solicitation notice
+      (Sources Sought, RFI, Industry Day announcement) from MSIC, MDA, Army G-2,
+      or AFC 10+ points higher than an equivalent formal solicitation — these
+      are exactly the signals that arrive before GovWin has them.
 
   # Strategic growth areas — score higher even if capability slightly stretches
   future_growth_areas:
@@ -78,10 +151,13 @@ company:
 
   # Primary DoD / IC customers — ranked by priority
   target_agencies:
+    - Army G-2 / ISR Task Force (ACTIVE WORK — highest priority, recompete watch)
+    - MSIC — Missile and Space Intelligence Center (CGO direct relationships)
+    - MDA — Missile Defense Agency, Redstone Arsenal (CGO direct relationships)
+    - Army Futures Command (AFC) — Huntsville HQ
     - Army (DEVCOM, ARL, PEO Aviation, AFC, PEO IEW&S, Redstone Arsenal)
-    - Army Futures Command (AFC)
     - DARPA
-    - MDA (Missile Defense Agency — Redstone Arsenal)
+    - DOJ / Law enforcement IC (proven ISR SME path via IRT network)
     - Air Force (AFRL, Wright-Patterson — Dayton presence)
     - Navy (NAVAIR, NAVSEA, ONR — SeaPort-NxG vehicle)
     - Marine Corps (MCSC)
@@ -220,6 +296,27 @@ keywords:
     - C4ISR
     - SOCOM
     - JADC2
+    # Active customer relationships — flag anything touching these
+    - MSIC
+    - Missile and Space Intelligence Center
+    - Army G-2
+    - ISR Task Force
+    - Missile Defense Agency
+    - Intuitive Research
+    - IRTC
+    # Pre-solicitation signals — these arrive before GovWin has them
+    - Sources Sought
+    - Request for Information
+    - Industry Day
+    - pre-solicitation
+    - market survey
+    - BAA
+    # SBIR / AI pursuit
+    - SBIR artificial intelligence
+    - SBIR machine learning
+    - SBIR ISR
+    - DEVCOM SBIR
+    - AFC SBIR
 
   # Items containing these terms may be relevant — let the AI decide
   medium_priority:
@@ -247,11 +344,18 @@ keywords:
     - PEO
     - OTA
     - SBIR
+    - STTR
     - subcontract
     - teaming
     - multi-domain
     - joint all-domain
     - Huntsville
+    - missile defense
+    - missile intelligence
+    - intelligence analysis
+    - targeting support
+    - DOJ intelligence
+    - law enforcement intelligence
 
   # Terms that strongly indicate an irrelevant item — used to deprioritize
   exclude_terms:
@@ -296,6 +400,11 @@ rss_feeds:
 # SAM.gov search queries — each term spawns one API call
 # ──────────────────────────────────────────────────────────────────────────────
 sam_search_terms:
+  # Active customer / recompete watch — HIGHEST priority
+  - "Army G-2 ISR task force intelligence exploitation"
+  - "MSIC Missile Space Intelligence Center analysis support"
+  - "MDA Missile Defense Agency systems engineering Huntsville"
+  # Named priority programs
   - "TITAN ISR Army Futures Command"
   - "Project Linchpin AI targeting Army"
   - "high energy laser directed energy Army"
@@ -306,7 +415,11 @@ sam_search_terms:
   - "Army Futures Command prototyping OTA"
   - "DEVCOM ARL directed energy research"
   - "counter UAS directed energy Army"
+  # SBIR — AI SME actively pursuing
+  - "SBIR artificial intelligence ISR Army"
+  - "SBIR machine learning targeting sensor fusion"
   - "SBIR directed energy laser Army"
-  - "SBIR ISR autonomy AI Army"
+  # Adjacent markets
+  - "DOJ Department Justice ISR intelligence support"
   - "PEO IEW&S systems integration Huntsville"
   - "fiber laser power scaling defense"
