@@ -32,7 +32,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fetcher import fetch_all_news, fetch_sam_opportunities, fetch_usaspending_awards, fetch_fpds_awards, fetch_sbir_topics
-from scorer import score_items, rescore_top_items
+from scorer import score_items, rescore_top_items, synthesize_news_trends
 from email_builder import build_email, send_email
 
 logging.basicConfig(
@@ -197,7 +197,10 @@ def run(dry_run: bool = False) -> None:
     # ── 2. Score with Haiku ───────────────────────────────────────────────────
     log.info("Step 2/4 — Scoring with Claude Haiku …")
     news_prefiltered = _keyword_prefilter(news_raw, max_items=60)
-    news_scored = score_items(news_prefiltered, item_type="news")
+    # Synthesize cross-article trends before scoring — a cluster of signals
+    # can score higher than any individual article
+    trend_items = synthesize_news_trends(news_prefiltered)
+    news_scored = score_items(news_prefiltered + trend_items, item_type="news")
     opps_scored = score_items(opps_raw, item_type="opportunity")
 
     # Haiku threshold — lenient, just culls obvious noise before Opus sees candidates

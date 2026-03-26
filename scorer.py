@@ -3,7 +3,7 @@ scorer.py — Use Claude to score and rank news articles and contract opportunit
 
 Each item receives:
   relevance_score    : 0-100 integer
-  lead_type          : opportunity | teaming | award_intel | market_intel | program_news
+  lead_type          : opportunity | teaming | award_intel | market_intel | program_news | trend
   rationale          : 1-2 sentence explanation of why this matters to our company
   recommended_action : concrete next step (e.g., "Submit proposal by Apr 15")
   tags               : list of relevant capability/technology tags
@@ -212,6 +212,90 @@ def _parse_scores(raw: str) -> list[dict]:
         inner = [l for l in lines[1:] if not l.strip().startswith("```")]
         text = "\n".join(inner).strip()
     return json.loads(text)
+
+
+def synthesize_news_trends(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """
+    Look across all pre-filtered news items and synthesize 3-5 cross-article
+    trends. Each trend becomes a new item in the scoring pool.
+
+    A trend can score higher than any individual article because it represents
+    a convergence of signals — e.g. three separate articles about Army AI/ISR
+    investment add up to a pattern worth acting on.
+    """
+    if len(items) < 3:
+        return []
+
+    api_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
+    if not api_key:
+        return []
+
+    profile = _load_profile()
+    c = profile["company"]
+    programs = c.get("priority_programs", [])
+    capabilities = c.get("capabilities", [])[:8]
+
+    article_list = "\n".join(
+        f"[{i}] {item.get('title', '')} ({item.get('source', '')})"
+        for i, item in enumerate(items)
+    )
+
+    prompt = f"""You are a BD analyst for a small defense subcontractor. Review these {len(items)} defense news headlines and identify 3-5 meaningful TRENDS — patterns where multiple articles together signal something more significant than any single article.
+
+Our focus areas:
+  Programs: {', '.join(programs[:6])}
+  Capabilities: {', '.join(str(c) for c in capabilities[:5])}
+
+Articles:
+{article_list}
+
+For each trend you identify, return a JSON object with:
+  - "title": short trend headline (e.g. "Army ISR Modernization Spending Accelerating")
+  - "summary": 2-3 sentences synthesizing what the pattern means for a Huntsville defense subcontractor with ISR/DE/AI capabilities
+  - "source_indices": list of article index numbers that form this trend (min 2)
+  - "tags": 2-4 relevant tags
+
+Only identify trends that are genuinely relevant to ISR exploitation, directed energy, AI/ML targeting, FPGA/edge computing, or Army/IC programs. Skip trends about unrelated defense topics.
+
+Return a JSON array only (may be empty if no relevant trends exist):
+[{{"title": "...", "summary": "...", "source_indices": [0, 3, 7], "tags": ["ISR", "Army"]}}]"""
+
+    try:
+        client = anthropic.Anthropic(api_key=api_key, timeout=60.0)
+        response = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=1500,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        trends_raw = _parse_scores(response.content[0].text)
+    except Exception as exc:
+        log.warning("Trend synthesis failed: %s", exc)
+        return []
+
+    trend_items = []
+    for t in trends_raw:
+        if not t.get("title") or not t.get("summary"):
+            continue
+        # Build source URLs from constituent articles
+        indices = t.get("source_indices", [])
+        source_urls = [items[i].get("url", "") for i in indices if i < len(items)]
+        source_titles = [items[i].get("title", "") for i in indices if i < len(items)]
+
+        trend_items.append({
+            "type": "news",
+            "lead_type": "trend",
+            "source": "Trend Synthesis",
+            "title": t["title"],
+            "url": source_urls[0] if source_urls else "",
+            "summary": t["summary"],
+            "published": "",
+            "constituent_titles": source_titles,
+            "constituent_urls": source_urls,
+            "tags": t.get("tags", []),
+        })
+
+    log.info("Trend synthesis: %d trends identified from %d articles", len(trend_items), len(items))
+    return trend_items
 
 
 def score_items(

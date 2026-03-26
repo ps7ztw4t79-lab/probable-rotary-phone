@@ -44,6 +44,7 @@ LEAD_TYPE_META: dict[str, dict] = {
     "award_intel":  {"label": "AWARD INTEL",    "color": "#4a148c"},
     "market_intel": {"label": "MARKET INTEL",   "color": "#b45309"},
     "program_news": {"label": "PROGRAM NEWS",   "color": "#b91c1c"},
+    "trend":        {"label": "TREND ↑",        "color": "#0891b2"},
 }
 
 
@@ -336,6 +337,19 @@ _TEMPLATE = """
                   <a href="{{ item._feedback_down | safe }}"
                      style="font-size:13px;text-decoration:none;" title="Mark as not relevant">👎</a>
                 </div>
+                <!-- Constituent articles (trend items only) -->
+                {% if item.constituent_titles %}
+                <div style="margin-top:8px;padding:8px 10px;background:#f1f5f9;border-radius:5px;">
+                  <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px;">
+                    BASED ON {{ item.constituent_titles | length }} ARTICLES:
+                  </div>
+                  {% for title, url in zip(item.constituent_titles, item.constituent_urls) %}
+                  <div style="font-size:11px;color:#475569;margin-bottom:2px;">
+                    &bull; <a href="{{ url }}" style="color:#2563eb;text-decoration:none;">{{ title | truncate(90) }}</a>
+                  </div>
+                  {% endfor %}
+                </div>
+                {% endif %}
               </td>
             </tr>
           </table>
@@ -404,6 +418,7 @@ def build_email(
     env.globals["score_label"] = _score_label
     env.globals["fmt_date"] = _fmt_date
     env.globals["lead_type_meta"] = LEAD_TYPE_META
+    env.globals["zip"] = zip
 
     tmpl = env.from_string(_TEMPLATE)
     high_count = sum(
