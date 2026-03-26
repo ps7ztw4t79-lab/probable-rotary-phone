@@ -31,7 +31,7 @@ from dotenv import load_dotenv
 # Load .env before importing modules that read env vars
 load_dotenv()
 
-from fetcher import fetch_all_news, fetch_sam_opportunities, fetch_usaspending_awards, fetch_fpds_awards, fetch_sbir_topics
+from fetcher import fetch_all_news, fetch_sam_opportunities, fetch_usaspending_awards, fetch_expiring_contracts, fetch_fpds_awards, fetch_sbir_topics
 from scorer import score_items, rescore_top_items, synthesize_news_trends
 from email_builder import build_email, send_email
 
@@ -158,6 +158,28 @@ Write in direct, active voice. No bullet points. No headers."""
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+def _tag_related_news(recompetes: list[dict], news_items: list[dict]) -> None:
+    """Mutate recompete items to attach titles of related news articles.
+
+    Uses lightweight keyword matching: if a news headline/summary shares 2+
+    meaningful words with the recompete's agency string, flag it as related.
+    Claude will see the `related_news` list and can factor it into scoring.
+    """
+    for rc in recompetes:
+        agency_words = {
+            w.lower() for w in (rc.get("agency") or "").split()
+            if len(w) > 4 and w.lower() not in {"department", "office", "division", "command"}
+        }
+        if not agency_words:
+            continue
+        matches = []
+        for news in news_items:
+            text = (news.get("title", "") + " " + news.get("summary", "")).lower()
+            if sum(1 for w in agency_words if w in text) >= 2:
+                matches.append(news.get("title", ""))
+        rc["related_news"] = matches[:3]
+
+
 def _min_score(env_key: str, default: int) -> int:
     try:
         return int(os.getenv(env_key, str(default)))
@@ -185,13 +207,19 @@ def run(dry_run: bool = False) -> None:
 
     sam_opps = fetch_sam_opportunities()
     usa_awards = fetch_usaspending_awards()
+    recompetes = fetch_expiring_contracts()
     fpds_awards = fetch_fpds_awards()
     sbir_topics = fetch_sbir_topics()
-    opps_raw = sam_opps + usa_awards + fpds_awards + sbir_topics
+
+    # Cross-reference expiring contracts with news — tag any news article that
+    # mentions the same agency so Claude can see the connection during scoring.
+    _tag_related_news(recompetes, news_raw)
+
+    opps_raw = sam_opps + usa_awards + recompetes + fpds_awards + sbir_topics
 
     log.info(
-        "  News: %d  |  SAM.gov: %d  |  USASpending: %d  |  FPDS: %d  |  SBIR: %d",
-        len(news_raw), len(sam_opps), len(usa_awards), len(fpds_awards), len(sbir_topics),
+        "  News: %d  |  SAM: %d  |  USASpending: %d  |  Recompetes: %d  |  FPDS: %d  |  SBIR: %d",
+        len(news_raw), len(sam_opps), len(usa_awards), len(recompetes), len(fpds_awards), len(sbir_topics),
     )
 
     # ── 2. Score with Haiku ───────────────────────────────────────────────────

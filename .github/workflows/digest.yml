@@ -2,7 +2,7 @@ name: Daily Defense BD Digest
 
 on:
   schedule:
-    - cron: '0 12 * * *'   # Daily at 12:00 UTC (8 AM ET / 7 AM EDT)
+    - cron: '0 12 * * 1-5'  # Weekdays 12:00 UTC (8 AM ET); Mon covers Fri/Sat/Sun via 7-day lookback
   workflow_dispatch:        # Allow manual trigger from GitHub Actions UI
 
 permissions:
