@@ -157,9 +157,76 @@ _TEMPLATE = """
     <tr>
       <td style="background:#ffffff;padding:0 36px 36px;border-radius:0 0 10px 10px;">
 
+        {% if recompetes %}
+        <!-- ── Section: Recompete Watch ── -->
+        <div style="padding-top:30px;">
+          <div style="font-size:11px;font-weight:700;color:#c2410c;text-transform:uppercase;
+                      letter-spacing:1.2px;border-bottom:2px solid #fed7aa;padding-bottom:8px;
+                      margin-bottom:18px;">
+            &#128269; Recompete Watch — 6mo to 2yr Horizon
+          </div>
+
+          {% for rc in recompetes %}
+          {% set sc = score_color(rc.relevance_score) %}
+          <table width="100%" cellpadding="0" cellspacing="0"
+                 style="border:1px solid #fed7aa;border-radius:8px;margin-bottom:14px;
+                        background:#fff7ed;border-left:4px solid #c2410c;">
+            <tr>
+              <td style="padding:14px 18px;">
+                <div style="margin-bottom:7px;">
+                  <span style="background:#c2410c;color:#fff;font-size:10px;font-weight:700;
+                               padding:2px 9px;border-radius:4px;letter-spacing:.6px;">
+                    &#9888; RECOMPETE
+                  </span>
+                  <span style="background:{{ sc }};color:#fff;font-size:10px;font-weight:700;
+                               padding:2px 9px;border-radius:4px;margin-left:6px;">
+                    {{ rc.relevance_score }}%
+                  </span>
+                  <span style="color:#92400e;font-size:11px;font-weight:600;margin-left:10px;">
+                    Expires {{ fmt_date(rc.end_date) }} &nbsp;&bull;&nbsp; {{ rc.days_remaining }}d remaining
+                  </span>
+                </div>
+                <a href="{{ rc.url }}" style="color:#7c2d12;font-size:15px;font-weight:700;
+                           text-decoration:none;line-height:1.35;display:block;margin-bottom:5px;">
+                  {{ rc.title | truncate(120) }}
+                </a>
+                <div style="color:#92400e;font-size:12px;margin-bottom:7px;">
+                  {% if rc.agency %}{{ rc.agency }}{% endif %}
+                  {% if rc.incumbent %} &nbsp;&bull;&nbsp; Incumbent: <strong>{{ rc.incumbent }}</strong>{% endif %}
+                  {% if rc.award_amount %} &nbsp;&bull;&nbsp; ${{ "{:,.0f}".format(rc.award_amount) }}{% endif %}
+                </div>
+                {% if rc.recommended_action %}
+                <div style="font-size:12.5px;color:#15803d;font-weight:600;margin-bottom:7px;">
+                  &#8594; {{ rc.recommended_action }}
+                </div>
+                {% endif %}
+                {% if rc.related_news %}
+                <div style="margin-bottom:7px;padding:6px 10px;background:#ffedd5;border-radius:5px;">
+                  <div style="font-size:10px;color:#92400e;font-weight:700;margin-bottom:3px;text-transform:uppercase;letter-spacing:.6px;">Related News</div>
+                  {% for headline in rc.related_news %}
+                  <div style="font-size:11px;color:#7c2d12;">&bull; {{ headline | truncate(100) }}</div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px;">
+                  {% for tag in rc.tags[:4] %}
+                  <span style="background:#fee2e2;color:#991b1b;font-size:11px;padding:2px 8px;border-radius:20px;">{{ tag }}</span>
+                  {% endfor %}
+                  <a href="{{ rc.url }}" style="color:#c2410c;font-size:11px;text-decoration:none;margin-left:auto;">View &#8599;</a>
+                  <span style="color:#cbd5e1;">|</span>
+                  <a href="{{ rc._feedback_up | safe }}" style="font-size:13px;text-decoration:none;">👍</a>
+                  <a href="{{ rc._feedback_down | safe }}" style="font-size:13px;text-decoration:none;">👎</a>
+                </div>
+              </td>
+            </tr>
+          </table>
+          {% endfor %}
+        </div>
+        {% endif %}
+
         {% if opportunities %}
         <!-- ── Section: Contract Opportunities ── -->
-        <div style="padding-top:30px;">
+        <div style="padding-top:{% if recompetes %}24px{% else %}30px{% endif %};">
           <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;
                       letter-spacing:1.2px;border-bottom:2px solid #e2e8f0;padding-bottom:8px;
                       margin-bottom:18px;">
@@ -335,6 +402,7 @@ def build_email(
     news_items: list[dict[str, Any]],
     opportunities: list[dict[str, Any]],
     run_dt: datetime,
+    recompetes: list[dict[str, Any]] | None = None,
     executive_summary: str = "",
     trend_delta: int | None = None,
     quiet_day: bool = False,
@@ -351,6 +419,7 @@ def build_email(
             result.append(enriched)
         return result
 
+    recompetes = _with_feedback(recompetes or [])
     opportunities = _with_feedback(opportunities)
     news_items = _with_feedback(news_items)
 
@@ -363,7 +432,7 @@ def build_email(
 
     tmpl = env.from_string(_TEMPLATE)
     high_count = sum(
-        1 for i in (opportunities + news_items) if i.get("relevance_score", 0) >= 70
+        1 for i in (recompetes + opportunities + news_items) if i.get("relevance_score", 0) >= 70
     )
     return tmpl.render(
         week_label=run_dt.strftime("Week of %B %d, %Y"),
@@ -373,6 +442,7 @@ def build_email(
         high_count=high_count,
         opp_count=len(opportunities),
         news_count=len(news_items),
+        recompetes=recompetes,
         executive_summary=executive_summary,
         trend_delta=trend_delta,
         quiet_day=quiet_day,
