@@ -128,9 +128,10 @@ def fetch_sam_opportunities() -> list[dict[str, Any]]:
         return []
 
     profile = _load_profile()
-    # Limit to 8 queries per run to stay within free-tier rate limits
+    # Limit to 3 queries per run — SAM.gov free tier is ~10 requests/day total.
+    # Using only the top 3 highest-priority terms preserves quota for 3+ test runs/day.
     # Strip special chars that cause 400s: hyphens, ampersands, slashes
-    raw_terms: list[str] = profile.get("sam_search_terms", [])[:8]
+    raw_terms: list[str] = profile.get("sam_search_terms", [])[:3]
     search_terms = [re.sub(r"[&\-/]", " ", t).strip() for t in raw_terms]
     posted_from = (_cutoff_dt()).strftime("%m/%d/%Y")
 
