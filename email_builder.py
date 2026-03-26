@@ -1,5 +1,5 @@
 """
-email_builder.py — Build the HTML weekly digest and send it.
+email_builder.py — Build the HTML daily digest and send it.
 
 Delivery is automatic:
   • If SENDGRID_API_KEY is set  → send via SendGrid
@@ -129,7 +129,7 @@ _TEMPLATE = """
     <tr>
       <td style="background:#0f1e36;border-radius:10px 10px 0 0;padding:28px 36px 22px;">
         <div style="color:#93c5fd;font-size:11px;font-weight:700;letter-spacing:1.5px;
-                    text-transform:uppercase;margin-bottom:4px;">Weekly Intelligence Report</div>
+                    text-transform:uppercase;margin-bottom:4px;">Daily Intelligence Report</div>
         <div style="color:#ffffff;font-size:26px;font-weight:800;line-height:1.2;
                     margin-bottom:2px;">Defense BD Digest</div>
         <div style="color:#94a3b8;font-size:13px;">{{ week_label }}</div>

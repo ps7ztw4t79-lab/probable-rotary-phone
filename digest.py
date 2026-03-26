@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-digest.py — Weekly Defense BD Digest
+digest.py — Daily Defense BD Digest
 =====================================
 Fetches defense news and contract intelligence, scores items with Claude AI,
 and sends a curated HTML email digest.
@@ -207,7 +207,7 @@ def run(dry_run: bool = False) -> None:
     haiku_news = _min_score("MIN_NEWS_SCORE", 50)
     haiku_opp = _min_score("MIN_OPPORTUNITY_SCORE", 50)
     # Final threshold — Opus enforces this bar; only items above this go in the email
-    final_threshold = 75
+    final_threshold = 70
 
     news_filtered = sorted(
         [i for i in news_scored if i.get("relevance_score", 0) >= haiku_news],
