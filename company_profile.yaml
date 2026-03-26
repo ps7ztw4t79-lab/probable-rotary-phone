@@ -36,15 +36,45 @@ company:
     - Digital Engineering
     - Technical Program Management
 
+  # Specific technical depth within capability areas
+  # The more specific the match, the higher the score should be
+  technical_depth:
+    directed_energy:
+      - Lethality analysis and effects modeling (kill chain, target vulnerability)
+      - High-power fiber laser architecture and power scaling
+      - HEL system integration and T&E
+    isr_exploitation:
+      - SIGINT and ELINT signal processing and analysis
+      - Multi-source data fusion and track correlation
+      - ISR sensor integration and ground station architecture
+
+  # Highest-priority named programs — items touching these score maximum
+  priority_programs:
+    - TITAN (Tactical Intel Targeting Access Node) — Army AFC ISR ground station
+    - Project Linchpin — AFC AI-enabled targeting and decision support
+    - HEL-D (High Energy Laser Demonstrator) — Army directed energy
+    - DE-MSHORAD (Directed Energy Maneuver SHORAD)
+    - Army Futures Command Cross-Functional Teams
+    - PEO IEW&S (Intelligence, Electronic Warfare & Sensors)
+    - DEVCOM / ARL directed energy and ISR research
+
+  # The single ideal lead — calibrates what a 90+ score looks like
+  ideal_lead: >
+    An integration, prototyping, or ISR-related contract at Army Futures
+    Command in Huntsville, AL with an AI/ML component, in the $1M–$10M
+    range. Programs like TITAN, Project Linchpin, DE-MSHORAD, or any
+    AFC-directed prototyping OTA are the bullseye. A subcontract position
+    under a Huntsville-area prime on one of these programs is equally ideal.
+
   # Strategic growth areas — score higher even if capability slightly stretches
   future_growth_areas:
-    - Directed Energy (DE) — expanding beyond HEL-D to other Army/Navy DE programs
-    - Electronic Warfare (EW) — leveraging ISR and sensor expertise
+    - Directed Energy (DE) — expanding beyond HEL-D to Army and Navy DE programs
+    - Electronic Warfare (EW) — leveraging ISR and sensor processing expertise
     - Autonomous Systems and AI/ML — building on ISR exploitation background
-    - Unmanned Systems (UAS / UGV / USV) and Counter-UAS (C-UAS)
-    - TITAN / DCGS-A and next-gen Army ISR architecture
+    - TITAN / next-gen Army ISR architecture
+    - Project Linchpin and AI-enabled targeting
+    - OTA / rapid prototyping at AFC and DEVCOM (new capability to develop)
     - Digital Engineering and MBSE pipelines
-    - AI-enabled ISR and automated target recognition
 
   # Primary DoD / IC customers — ranked by priority
   target_agencies:
@@ -109,13 +139,24 @@ company:
       - Broad Agency Announcements (BAA) — DEVCOM, ARL, DARPA
       - Classified program subcontracts (TS/SCI billets)
 
-  # Categories to EXCLUDE — never relevant, filter out before scoring
+  # Categories to EXCLUDE — never relevant, score 0
   exclude_categories:
     - Military healthcare / medical systems
     - Logistics and supply chain management
     - Facilities / MILCON / construction
     - Pure IT helpdesk and desktop support
     - Food service / base operations support
+    - Space and satellite programs (out of scope)
+
+  # False positive patterns — items that LOOK relevant but aren't actionable
+  # These should be capped at 50 even if keywords match
+  scoring_penalties:
+    - Congressional budget coverage and NDAA analysis without a specific program action
+    - Generic "AI in defense" think pieces not tied to a named program or RFP
+    - Large prime contract awards over $50M with no visible subcontracting opportunity described
+    - Space, satellite, and launch programs
+    - Broad defense policy or strategy articles without a procurement hook
+    - International arms sales and FMS (Foreign Military Sales)
 
   # NAICS codes that align with your capabilities
   naics_codes:
@@ -134,42 +175,48 @@ company:
 keywords:
   # Items containing any of these terms are VERY likely relevant
   high_priority:
-    # Directed Energy / HEL — core experience
-    - high energy laser
+    # Named priority programs — absolute highest value
+    - TITAN
+    - Project Linchpin
+    - Linchpin
+    - DE-MSHORAD
     - HEL-D
     - HEL-TVD
-    - DE-MSHORAD
+    - Army Futures Command
+    - AFC prototyping
+    # Directed Energy / HEL — core experience
+    - high energy laser
     - directed energy
     - laser weapon
     - high power laser
+    - fiber laser
     - solid state laser
     - laser lethality
+    - lethality analysis
     # ISR / Sensor exploitation — core experience
     - ISR exploitation
+    - SIGINT processing
+    - ELINT
     - sensor fusion
+    - data fusion
     - multi-INT
     - DCGS-A
-    - TITAN ISR
     - PEO IEW&S
-    - ISR data
-    - target recognition
-    # Growth areas
-    - autonomous systems
-    - autonomy
-    - artificial intelligence
-    - machine learning
-    - AI/ML
+    - ISR data exploitation
+    - track correlation
+    # Growth areas with specificity
+    - AI targeting
+    - AI-enabled ISR
+    - autonomous targeting
+    - machine learning Army
     - electronic warfare
-    - unmanned aerial
-    - UAS
     - counter-UAS
     - C-UAS
     - MBSE
-    - digital engineering
-    # Key program offices / locations
+    # Key locations / orgs
     - Redstone Arsenal
     - DEVCOM
-    - Army Futures Command
+    - ARL directed energy
     - C4ISR
     - SOCOM
     - JADC2
@@ -249,17 +296,17 @@ rss_feeds:
 # SAM.gov search queries — each term spawns one API call
 # ──────────────────────────────────────────────────────────────────────────────
 sam_search_terms:
+  - "TITAN ISR Army Futures Command"
+  - "Project Linchpin AI targeting Army"
   - "high energy laser directed energy Army"
-  - "HEL directed energy systems engineering"
-  - "Army ISR exploitation sensor fusion"
-  - "DCGS-A TITAN ISR engineering"
-  - "systems integration Redstone Arsenal"
-  - "autonomous systems Army engineering"
-  - "electronic warfare systems integration"
-  - "C4ISR integration Army"
-  - "counter UAS directed energy"
-  - "SBIR directed energy laser"
-  - "SBIR ISR autonomy Army"
-  - "SeaPort-NxG engineering services"
-  - "DEVCOM ARL research engineering"
-  - "digital engineering MBSE defense"
+  - "HEL lethality systems engineering Redstone"
+  - "Army ISR exploitation SIGINT sensor fusion"
+  - "DCGS-A ISR ground station engineering"
+  - "DE-MSHORAD directed energy SHORAD"
+  - "Army Futures Command prototyping OTA"
+  - "DEVCOM ARL directed energy research"
+  - "counter UAS directed energy Army"
+  - "SBIR directed energy laser Army"
+  - "SBIR ISR autonomy AI Army"
+  - "PEO IEW&S systems integration Huntsville"
+  - "fiber laser power scaling defense"
