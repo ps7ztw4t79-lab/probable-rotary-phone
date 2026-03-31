@@ -211,6 +211,12 @@ def run(dry_run: bool = False) -> None:
     fpds_awards = fetch_fpds_awards()
     sbir_topics = fetch_sbir_topics()
 
+    if os.getenv("SKIP_DEDUP", "").lower() not in ("1", "true", "yes"):
+        sam_opps = _filter_seen(sam_opps, seen_urls)
+        usa_awards = _filter_seen(usa_awards, seen_urls)
+        # recompetes intentionally not deduped — these are long-horizon watches
+        # meant to be visible each week until the contract expires
+
     # Cross-reference expiring contracts with news — tag any news article that
     # mentions the same agency so Claude can see the connection during scoring.
     _tag_related_news(recompetes, news_raw)

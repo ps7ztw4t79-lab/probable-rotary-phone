@@ -445,7 +445,6 @@ _FPDS_QUERIES = [
     "ISR exploitation",
     "sensor fusion",
     "TITAN",
-    "Linchpin",
     "DEVCOM",
     "fiber laser",
     "SIGINT",
