@@ -136,6 +136,7 @@ def fetch_sam_opportunities() -> list[dict[str, Any]]:
 
     log.info("SAM.gov: API key present (%s...)", api_key[:6])
     posted_from = (_cutoff_dt()).strftime("%m/%d/%Y")
+    posted_to   = datetime.now(timezone.utc).strftime("%m/%d/%Y")
     all_opps: list[dict[str, Any]] = []
     seen_ids: set[str] = set()
 
@@ -152,11 +153,15 @@ def fetch_sam_opportunities() -> list[dict[str, Any]]:
             "api_key": api_key,
             "deptname": deptname,
             "postedFrom": posted_from,
+            "postedTo": posted_to,
             "ptype": "p,r,s,k,o",
             "limit": 100,
             "offset": 0,
         }
-        log.info("SAM.gov: fetching %s solicitations posted since %s", label, posted_from)
+        log.info("SAM.gov: fetching %s solicitations %s → %s", label, posted_from, posted_to)
+        # Log the fully prepared URL (key redacted) so failures are diagnosable
+        prepared = requests.Request("GET", _SAM_URL, params=params).prepare()
+        log.info("SAM.gov request URL: %s", (prepared.url or "").replace(api_key, "REDACTED"))
         try:
             resp = requests.get(_SAM_URL, params=params, timeout=30)
 
