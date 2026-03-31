@@ -104,6 +104,22 @@ def _feedback_urls(item: dict) -> tuple[str, str]:
     return _url("[+]"), _url("[-]")
 
 
+def _display_rationale(item: dict[str, Any]) -> str:
+    """Return item rationale with a concise fallback for empty model output."""
+    rationale = (item.get("rationale") or "").strip()
+    if rationale:
+        return rationale
+
+    lead_type = (item.get("lead_type") or "").strip()
+    if not lead_type and "days_remaining" in item:
+        lead_type = "recompete"
+    if lead_type == "opportunity":
+        return "Rationale unavailable from scorer; review the notice details and fit for immediate pursuit."
+    if lead_type == "recompete":
+        return "Rationale unavailable from scorer; validate incumbent position, timing, and teaming path."
+    return "Rationale unavailable from scorer; treat as watchlist intelligence pending deeper review."
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Plain-text builder
 # ──────────────────────────────────────────────────────────────────────────────
@@ -174,8 +190,7 @@ def build_plain_text(
                 meta_parts.append(opp["set_aside"])
             if meta_parts:
                 lines.append("  " + " | ".join(meta_parts))
-            if opp.get("rationale"):
-                lines.append(f"  Why we care: {opp['rationale']}")
+            lines.append(f"  Why we care: {_display_rationale(opp)}")
             if opp.get("recommended_action"):
                 lines.append(f"  Action: {opp['recommended_action']}")
             if opp.get("tags"):
@@ -195,6 +210,7 @@ def build_plain_text(
                 source_date += f" -- {_fmt_date(item['published'])}"
             lines.append(f"[{meta['label']}] Score: {score} ({_score_label(score)})  {source_date}")
             lines.append(item.get("title", "")[:100])
+            lines.append(f"  Why we care: {_display_rationale(item)}")
             if item.get("recommended_action"):
                 lines.append(f"  Action: {item['recommended_action']}")
             if item.get("tags"):
@@ -219,8 +235,7 @@ def build_plain_text(
                 if rc.get("award_amount"):
                     parts.append(f"${rc['award_amount']:,.0f}")
                 lines.append("  " + " | ".join(parts))
-            if rc.get("rationale"):
-                lines.append(f"  Why we care: {rc['rationale']}")
+            lines.append(f"  Why we care: {_display_rationale(rc)}")
             if rc.get("recommended_action"):
                 lines.append(f"  Action: {rc['recommended_action']}")
             if rc.get("tags"):
@@ -360,9 +375,7 @@ _TEMPLATE = """<!DOCTYPE html>
                 <span style="color:#dc2626;font-weight:bold;">Due {{ fmt_date(opp.response_deadline) }}</span>
               {% endif %}
             </div>
-            {% if opp.rationale %}
-            <div style="font-size:12px;color:#374151;margin-bottom:5px;">{{ opp.rationale }}</div>
-            {% endif %}
+            <div style="font-size:12px;color:#374151;margin-bottom:5px;">{{ display_rationale(opp) }}</div>
             {% if opp.recommended_action %}
             <div style="font-size:12px;color:#15803d;font-weight:bold;margin-bottom:6px;">
               &#8594; {{ opp.recommended_action }}
@@ -436,6 +449,7 @@ _TEMPLATE = """<!DOCTYPE html>
                        text-decoration:none;line-height:1.4;display:block;margin-bottom:6px;">
               {{ item.title | truncate(130) }}
             </a>
+            <div style="font-size:12px;color:#374151;margin-bottom:5px;">{{ display_rationale(item) }}</div>
             {% if item.recommended_action %}
             <div style="font-size:12px;color:#15803d;font-weight:bold;margin-bottom:6px;">
               &#8594; {{ item.recommended_action }}
@@ -530,9 +544,7 @@ _TEMPLATE = """<!DOCTYPE html>
               {% if rc.agency %}{{ rc.agency }}{% endif %}
               {% if rc.award_amount %} &nbsp;&bull;&nbsp; ${{ "{:,.0f}".format(rc.award_amount) }}{% endif %}
             </div>
-            {% if rc.rationale %}
-            <div style="font-size:12px;color:#374151;margin-bottom:5px;">{{ rc.rationale }}</div>
-            {% endif %}
+            <div style="font-size:12px;color:#374151;margin-bottom:5px;">{{ display_rationale(rc) }}</div>
             {% if rc.recommended_action %}
             <div style="font-size:12px;color:#15803d;font-weight:bold;margin-bottom:6px;">
               &#8594; {{ rc.recommended_action }}
@@ -648,6 +660,7 @@ def build_email(
     env.globals["score_label"] = _score_label
     env.globals["fmt_date"] = _fmt_date
     env.globals["lead_type_meta"] = LEAD_TYPE_META
+    env.globals["display_rationale"] = _display_rationale
     env.globals["zip"] = zip
 
     tmpl = env.from_string(_TEMPLATE)
