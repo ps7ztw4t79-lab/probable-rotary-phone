@@ -10,7 +10,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote_plus
+from urllib.parse import quote, quote_plus
 
 import feedparser
 import requests
@@ -382,7 +382,7 @@ def fetch_usaspending_awards() -> list[dict[str, Any]]:
                 "type": "opportunity",
                 "source": "USASpending.gov",
                 "title": f"{recipient} — {agency}" if agency else recipient,
-                "url": f"https://www.usaspending.gov/award/{award_id}" if award_id else "https://www.usaspending.gov",
+                "url": f"https://www.usaspending.gov/award/{quote(award_id, safe='')}" if award_id else "https://www.usaspending.gov",
                 "agency": agency,
                 "naics": naics,
                 "set_aside": "",
@@ -520,8 +520,8 @@ def fetch_expiring_contracts(days_min: int = 180, days_max: int = 730) -> list[d
                 {
                     "type": "recompete",
                     "source": "USASpending.gov",
-                    "title": f"{agency} — {description[:70] or award_id}".strip(" —"),
-                    "url": f"https://www.usaspending.gov/award/{award_id}" if award_id else "https://www.usaspending.gov",
+                    "title": f"{recipient} — {description[:60] or award_id} — Exp {end_str}",
+                    "url": f"https://www.usaspending.gov/award/{quote(award_id, safe='')}" if award_id else "https://www.usaspending.gov",
                     "agency": agency,
                     "incumbent": recipient,
                     "award_amount": amount,

@@ -155,36 +155,6 @@ def build_plain_text(
         lines.append("Defense BD Digest | Powered by Claude AI")
         return "\n".join(lines)
 
-    # Recompetes
-    if recompetes:
-        lines += [SEP, "RECOMPETE WATCH -- 6-Month to 2-Year Horizon", SEP, ""]
-        for rc in recompetes:
-            score = rc.get("relevance_score", 0)
-            lines.append(f"[RECOMPETE] Score: {score} ({_score_label(score)})")
-            if rc.get("end_date"):
-                lines.append(
-                    f"Expires: {_fmt_date(rc['end_date'])}  |  {rc.get('days_remaining', '?')}d remaining"
-                )
-            lines.append(rc.get("title", "").upper()[:100])
-            if rc.get("agency"):
-                parts = [rc["agency"]]
-                if rc.get("incumbent"):
-                    parts.append(f"Incumbent: {rc['incumbent']}")
-                if rc.get("award_amount"):
-                    parts.append(f"${rc['award_amount']:,.0f}")
-                lines.append("  " + " | ".join(parts))
-            if rc.get("recommended_action"):
-                lines.append(f"  Action: {rc['recommended_action']}")
-            if rc.get("tags"):
-                lines.append(f"  Tags: {', '.join(rc['tags'][:4])}")
-            if rc.get("url"):
-                lines.append(f"  URL: {rc['url']}")
-            if rc.get("related_news"):
-                lines.append("  Related news:")
-                for headline in rc["related_news"]:
-                    lines.append(f"    - {headline[:100]}")
-            lines.append("")
-
     # Contract opportunities
     if opportunities:
         lines += [SEP, "CONTRACT OPPORTUNITIES -- SAM.gov", SEP, ""]
@@ -204,6 +174,8 @@ def build_plain_text(
                 meta_parts.append(opp["set_aside"])
             if meta_parts:
                 lines.append("  " + " | ".join(meta_parts))
+            if opp.get("rationale"):
+                lines.append(f"  Why we care: {opp['rationale']}")
             if opp.get("recommended_action"):
                 lines.append(f"  Action: {opp['recommended_action']}")
             if opp.get("tags"):
@@ -233,6 +205,32 @@ def build_plain_text(
                 lines.append("  Based on:")
                 for title in item["constituent_titles"][:4]:
                     lines.append(f"    - {title[:90]}")
+            lines.append("")
+
+    # Recompetes
+    if recompetes:
+        lines += [SEP, "RECOMPETE WATCH -- 6-Month to 2-Year Horizon", SEP, ""]
+        for rc in recompetes:
+            score = rc.get("relevance_score", 0)
+            lines.append(f"[RECOMPETE] Score: {score} ({_score_label(score)})")
+            lines.append(rc.get("title", "")[:130])
+            if rc.get("agency"):
+                parts = [rc["agency"]]
+                if rc.get("award_amount"):
+                    parts.append(f"${rc['award_amount']:,.0f}")
+                lines.append("  " + " | ".join(parts))
+            if rc.get("rationale"):
+                lines.append(f"  Why we care: {rc['rationale']}")
+            if rc.get("recommended_action"):
+                lines.append(f"  Action: {rc['recommended_action']}")
+            if rc.get("tags"):
+                lines.append(f"  Tags: {', '.join(rc['tags'][:4])}")
+            if rc.get("url"):
+                lines.append(f"  URL: {rc['url']}")
+            if rc.get("related_news"):
+                lines.append("  Related news:")
+                for headline in rc["related_news"]:
+                    lines.append(f"    - {headline[:100]}")
             lines.append("")
 
     lines += [SEP, "Defense BD Digest | Powered by Claude AI | USASpending.gov | Defense RSS", SEP]
@@ -310,101 +308,11 @@ _TEMPLATE = """<!DOCTYPE html>
   <tr>
     <td style="background:#ffffff;padding:0 32px 32px;">
 
-      {% if recompetes %}
-      <!-- ── Recompete Watch ── -->
-      <table width="100%" cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td style="padding-top:28px;padding-bottom:10px;border-bottom:2px solid #fed7aa;">
-            <span style="font-size:10px;font-weight:bold;color:#c2410c;text-transform:uppercase;
-                         letter-spacing:1.2px;">&#9658; Recompete Watch &mdash; 6-Month to 2-Year Horizon</span>
-          </td>
-        </tr>
-      </table>
-
-      {% for rc in recompetes %}
-      {% set sc = score_color(rc.relevance_score) %}
-      <table width="100%" cellpadding="0" cellspacing="0" border="0"
-             style="border:1px solid #fed7aa;margin-top:14px;background:#fff7ed;">
-        <tr>
-          <!-- Accent bar -->
-          <td width="4" style="background:#c2410c;font-size:0;line-height:0;">&nbsp;</td>
-          <td style="padding:14px 16px;">
-            <!-- Badges -->
-            <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:8px;">
-              <tr>
-                <td style="padding-right:6px;">
-                  <span style="background:#c2410c;color:#ffffff;font-size:9px;font-weight:bold;
-                               padding:2px 8px;">RECOMPETE</span>
-                </td>
-                <td style="padding-right:10px;">
-                  <span style="background:{{ sc }};color:#ffffff;font-size:9px;font-weight:bold;
-                               padding:2px 8px;">{{ rc.relevance_score }}</span>
-                </td>
-                <td>
-                  <span style="color:#92400e;font-size:11px;font-weight:bold;">
-                    Expires {{ fmt_date(rc.end_date) }} &nbsp;&bull;&nbsp; {{ rc.days_remaining }}d remaining
-                  </span>
-                </td>
-              </tr>
-            </table>
-            <!-- Title -->
-            <a href="{{ rc.url }}" style="color:#7c2d12;font-size:14px;font-weight:bold;
-                       text-decoration:none;line-height:1.4;display:block;margin-bottom:5px;">
-              {{ rc.title | truncate(120) }}
-            </a>
-            <!-- Meta -->
-            <div style="color:#92400e;font-size:11px;margin-bottom:6px;">
-              {% if rc.agency %}{{ rc.agency }}{% endif %}
-              {% if rc.incumbent %} &nbsp;&bull;&nbsp; Incumbent: <strong>{{ rc.incumbent }}</strong>{% endif %}
-              {% if rc.award_amount %} &nbsp;&bull;&nbsp; ${{ "{:,.0f}".format(rc.award_amount) }}{% endif %}
-            </div>
-            {% if rc.recommended_action %}
-            <div style="font-size:12px;color:#15803d;font-weight:bold;margin-bottom:6px;">
-              &#8594; {{ rc.recommended_action }}
-            </div>
-            {% endif %}
-            {% if rc.related_news %}
-            <table width="100%" cellpadding="0" cellspacing="0" border="0"
-                   style="margin-bottom:8px;background:#ffedd5;">
-              <tr><td style="padding:6px 10px;">
-                <div style="font-size:9px;color:#92400e;font-weight:bold;
-                            text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;">Related News</div>
-                {% for headline in rc.related_news %}
-                <div style="font-size:11px;color:#7c2d12;">&bull; {{ headline | truncate(100) }}</div>
-                {% endfor %}
-              </td></tr>
-            </table>
-            {% endif %}
-            <!-- Tags + actions row -->
-            <table width="100%" cellpadding="0" cellspacing="0" border="0">
-              <tr>
-                <td>
-                  {% for tag in rc.tags[:4] %}
-                  <span style="display:inline-block;background:#fee2e2;color:#991b1b;font-size:10px;
-                               padding:2px 7px;margin-right:4px;">{{ tag }}</span>
-                  {% endfor %}
-                </td>
-                <td align="right" style="white-space:nowrap;font-size:11px;">
-                  <a href="{{ rc.url }}" style="color:#c2410c;text-decoration:none;font-weight:bold;">View</a>
-                  &nbsp;&nbsp;
-                  <a href="{{ rc._feedback_up | safe }}" style="color:#15803d;text-decoration:none;font-weight:bold;">[+]</a>
-                  &nbsp;
-                  <a href="{{ rc._feedback_down | safe }}" style="color:#9ca3af;text-decoration:none;">[&#8722;]</a>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-      {% endfor %}
-      {% endif %}
-
       {% if opportunities %}
       <!-- ── Contract Opportunities ── -->
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td style="padding-top:{% if recompetes %}24px{% else %}28px{% endif %};
-                     padding-bottom:10px;border-bottom:2px solid #e2e8f0;">
+          <td style="padding-top:28px;padding-bottom:10px;border-bottom:2px solid #e2e8f0;">
             <span style="font-size:10px;font-weight:bold;color:#475569;text-transform:uppercase;
                          letter-spacing:1.2px;">&#9658; Contract Opportunities &mdash; SAM.gov</span>
           </td>
@@ -452,6 +360,9 @@ _TEMPLATE = """<!DOCTYPE html>
                 <span style="color:#dc2626;font-weight:bold;">Due {{ fmt_date(opp.response_deadline) }}</span>
               {% endif %}
             </div>
+            {% if opp.rationale %}
+            <div style="font-size:12px;color:#374151;margin-bottom:5px;">{{ opp.rationale }}</div>
+            {% endif %}
             {% if opp.recommended_action %}
             <div style="font-size:12px;color:#15803d;font-weight:bold;margin-bottom:6px;">
               &#8594; {{ opp.recommended_action }}
@@ -565,6 +476,98 @@ _TEMPLATE = """<!DOCTYPE html>
               </tr>
             </table>
             {% endif %}
+          </td>
+        </tr>
+      </table>
+      {% endfor %}
+      {% endif %}
+
+      {% if recompetes %}
+      <!-- ── Recompete Watch ── -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td style="padding-top:{% if news_items or opportunities %}24px{% else %}28px{% endif %};
+                     padding-bottom:10px;border-bottom:2px solid #fed7aa;">
+            <span style="font-size:10px;font-weight:bold;color:#c2410c;text-transform:uppercase;
+                         letter-spacing:1.2px;">&#9658; Recompete Watch &mdash; 6-Month to 2-Year Horizon</span>
+          </td>
+        </tr>
+      </table>
+
+      {% for rc in recompetes %}
+      {% set sc = score_color(rc.relevance_score) %}
+      <table width="100%" cellpadding="0" cellspacing="0" border="0"
+             style="border:1px solid #fed7aa;margin-top:14px;background:#fff7ed;">
+        <tr>
+          <!-- Accent bar -->
+          <td width="4" style="background:#c2410c;font-size:0;line-height:0;">&nbsp;</td>
+          <td style="padding:14px 16px;">
+            <!-- Badges -->
+            <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:8px;">
+              <tr>
+                <td style="padding-right:6px;">
+                  <span style="background:#c2410c;color:#ffffff;font-size:9px;font-weight:bold;
+                               padding:2px 8px;">RECOMPETE</span>
+                </td>
+                <td style="padding-right:10px;">
+                  <span style="background:{{ sc }};color:#ffffff;font-size:9px;font-weight:bold;
+                               padding:2px 8px;">{{ rc.relevance_score }}</span>
+                </td>
+                <td>
+                  <span style="color:#92400e;font-size:11px;font-weight:bold;">
+                    {{ rc.days_remaining }}d remaining
+                  </span>
+                </td>
+              </tr>
+            </table>
+            <!-- Title: incumbent — short description — expiration -->
+            <a href="{{ rc.url }}" style="color:#7c2d12;font-size:14px;font-weight:bold;
+                       text-decoration:none;line-height:1.4;display:block;margin-bottom:5px;">
+              {{ rc.title | truncate(130) }}
+            </a>
+            <!-- Meta -->
+            <div style="color:#92400e;font-size:11px;margin-bottom:6px;">
+              {% if rc.agency %}{{ rc.agency }}{% endif %}
+              {% if rc.award_amount %} &nbsp;&bull;&nbsp; ${{ "{:,.0f}".format(rc.award_amount) }}{% endif %}
+            </div>
+            {% if rc.rationale %}
+            <div style="font-size:12px;color:#374151;margin-bottom:5px;">{{ rc.rationale }}</div>
+            {% endif %}
+            {% if rc.recommended_action %}
+            <div style="font-size:12px;color:#15803d;font-weight:bold;margin-bottom:6px;">
+              &#8594; {{ rc.recommended_action }}
+            </div>
+            {% endif %}
+            {% if rc.related_news %}
+            <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="margin-bottom:8px;background:#ffedd5;">
+              <tr><td style="padding:6px 10px;">
+                <div style="font-size:9px;color:#92400e;font-weight:bold;
+                            text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;">Related News</div>
+                {% for headline in rc.related_news %}
+                <div style="font-size:11px;color:#7c2d12;">&bull; {{ headline | truncate(100) }}</div>
+                {% endfor %}
+              </td></tr>
+            </table>
+            {% endif %}
+            <!-- Tags + actions row -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td>
+                  {% for tag in rc.tags[:4] %}
+                  <span style="display:inline-block;background:#fee2e2;color:#991b1b;font-size:10px;
+                               padding:2px 7px;margin-right:4px;">{{ tag }}</span>
+                  {% endfor %}
+                </td>
+                <td align="right" style="white-space:nowrap;font-size:11px;">
+                  <a href="{{ rc.url }}" style="color:#c2410c;text-decoration:none;font-weight:bold;">View</a>
+                  &nbsp;&nbsp;
+                  <a href="{{ rc._feedback_up | safe }}" style="color:#15803d;text-decoration:none;font-weight:bold;">[+]</a>
+                  &nbsp;
+                  <a href="{{ rc._feedback_down | safe }}" style="color:#9ca3af;text-decoration:none;">[&#8722;]</a>
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
       </table>
