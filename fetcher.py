@@ -114,31 +114,35 @@ _SAM_URL = "https://api.sam.gov/opportunities/v2/search"
 
 def fetch_sam_opportunities() -> list[dict[str, Any]]:
     """
-    Fetch recent DoD contract opportunities from SAM.gov in a single API call.
+    Fetch recent DoD contract opportunities from SAM.gov.
 
-    Uses a broad DoD department filter instead of keyword searches — one request
-    returns up to 100 opportunities, then the keyword pre-filter and Claude scoring
-    handle relevance. This conserves the free-tier daily quota (~10 requests/day).
+    Uses a broad DoD department filter — one request returns up to 100
+    opportunities, then keyword pre-filter and Claude scoring handle relevance.
 
-    Requires SAM_GOV_API_KEY environment variable.
-    Free API keys: https://sam.gov/profile/details
+    Requires SAM_GOV_API_KEY (set as secret SAM_api in GitHub Actions).
+
+    IMPORTANT: SAM.gov free-tier "public" keys are IP-restricted and are
+    blocked by GitHub Actions (AWS) IPs. If you see 403 errors in the logs,
+    you need a SAM.gov System Account key (requires org registration at
+    https://sam.gov/profile/details under "System Accounts").
     """
     api_key = os.getenv("SAM_GOV_API_KEY", "").strip()
     if not api_key:
         log.warning(
-            "SAM_GOV_API_KEY not set — skipping contract opportunity fetch. "
-            "Get a free key at https://sam.gov/profile/details"
+            "SAM_GOV_API_KEY not set (GitHub secret name: SAM_api) — "
+            "skipping SAM.gov fetch. Register at https://sam.gov/profile/details"
         )
         return []
 
+    log.info("SAM.gov: API key present (%s...)", api_key[:6])
     posted_from = (_cutoff_dt()).strftime("%m/%d/%Y")
     all_opps: list[dict[str, Any]] = []
     seen_ids: set[str] = set()
 
-    # Two queries: DoD (covers Army/Navy/DARPA/MDA/NSA/NGA/DIA/NRO) + ODNI (IC community).
-    # CIA is rarely on SAM so skipped. 2 requests = well within free-tier daily quota.
-    # Notice types: p=presol, r=sources sought, s=special notice, k=combined synopsis, o=solicitation
-    # Excludes award notices (a) since USASpending already covers awards.
+    # Two queries: DoD (Army/Navy/DARPA/MDA/NSA/NGA/DIA/NRO) + ODNI/IC.
+    # Notice types: p=presol, r=sources sought, s=special notice,
+    #               k=combined synopsis, o=solicitation
+    # Excludes award notices (a) — USASpending covers those.
     dept_queries = [
         ("DEPT OF DEFENSE", "DoD"),
         ("OFFICE OF THE DIRECTOR OF NATIONAL INTELLIGENCE", "ODNI/IC"),
@@ -155,10 +159,32 @@ def fetch_sam_opportunities() -> list[dict[str, Any]]:
         log.info("SAM.gov: fetching %s solicitations posted since %s", label, posted_from)
         try:
             resp = requests.get(_SAM_URL, params=params, timeout=30)
-            resp.raise_for_status()
-            data = resp.json()
 
-            for opp in data.get("opportunitiesData", []):
+            # Log full error detail so failures are diagnosable in Actions logs
+            if resp.status_code != 200:
+                body_preview = resp.text[:400].replace("\n", " ")
+                log.warning(
+                    "SAM.gov HTTP %s (%s) — response: %s",
+                    resp.status_code, label, body_preview,
+                )
+                if resp.status_code == 403:
+                    log.warning(
+                        "SAM.gov 403: API key is likely a public/personal key blocked "
+                        "from server IPs. A System Account key is required for CI use."
+                    )
+                elif resp.status_code == 429:
+                    log.warning("SAM.gov 429: daily quota exhausted — will retry tomorrow")
+                    break
+                resp.raise_for_status()
+
+            data = resp.json()
+            records = data.get("opportunitiesData", [])
+            log.info(
+                "SAM.gov %s: %d records returned (totalRecords=%s)",
+                label, len(records), data.get("totalRecords", "?"),
+            )
+
+            for opp in records:
                 notice_id = opp.get("noticeId", "")
                 if not notice_id or notice_id in seen_ids:
                     continue
@@ -169,7 +195,18 @@ def fetch_sam_opportunities() -> list[dict[str, Any]]:
                     or opp.get("organizationHierarchy", "")
                     or opp.get("officeAddress", {}).get("city", "")
                 )
-                description = (opp.get("description") or "")[:700]
+
+                # SAM.gov v2 search returns description as a resource URL, not
+                # text. Build a useful description from structured fields instead.
+                raw_desc = opp.get("description") or ""
+                if raw_desc.startswith("/") or raw_desc.startswith("http"):
+                    raw_desc = ""  # discard URL — not useful to the scorer
+                naics_desc = opp.get("naicsDescription", "")
+                set_aside_desc = opp.get("typeOfSetAsideDescription", "")
+                place = (opp.get("placeOfPerformance") or {}).get("city", {})
+                place_str = place.get("name", "") if isinstance(place, dict) else ""
+                description_parts = [p for p in [naics_desc, set_aside_desc, place_str, raw_desc] if p]
+                description = "; ".join(description_parts)[:700]
 
                 all_opps.append(
                     {
@@ -179,7 +216,7 @@ def fetch_sam_opportunities() -> list[dict[str, Any]]:
                         "url": f"https://sam.gov/opp/{notice_id}/view",
                         "agency": agency,
                         "naics": opp.get("naicsCode", ""),
-                        "set_aside": opp.get("typeOfSetAside", "") or opp.get("typeOfSetAsideDescription", ""),
+                        "set_aside": opp.get("typeOfSetAside", "") or set_aside_desc,
                         "notice_type": opp.get("type", ""),
                         "solicitation_number": opp.get("solicitationNumber", ""),
                         "posted_date": opp.get("postedDate", ""),
@@ -189,19 +226,12 @@ def fetch_sam_opportunities() -> list[dict[str, Any]]:
                     }
                 )
 
-            total_available = data.get("totalRecords", len(all_opps))
-            log.info("SAM.gov %s: %d results (of %d total in window)", label, len(all_opps), total_available)
-
-        except requests.HTTPError as exc:
-            status = exc.response.status_code if exc.response is not None else "?"
-            log.warning("SAM.gov HTTP %s error (%s): %s", status, label, exc)
-            if exc.response is not None and exc.response.status_code == 429:
-                log.warning("SAM.gov daily quota exhausted — will retry tomorrow")
-                break
+        except requests.HTTPError:
+            pass  # already logged above with response body
         except Exception as exc:
             log.warning("SAM.gov fetch failed (%s): %s", label, exc)
         else:
-            import time; time.sleep(1)  # brief pause between the two requests
+            import time; time.sleep(1)  # brief pause between the two dept queries
 
     log.info("SAM.gov total: %d unique opportunities", len(all_opps))
     return all_opps
