@@ -305,7 +305,7 @@ _DEFAULT_NAICS = [
 
 def fetch_usaspending_awards() -> list[dict[str, Any]]:
     """
-    Fetch recent DoD/IC contract awards from USASpending.gov.
+    Fetch recent DoD contract awards from USASpending.gov.
     Completely free — no registration or API key required.
     """
     profile = _load_profile()
@@ -321,6 +321,11 @@ def fetch_usaspending_awards() -> list[dict[str, Any]]:
             "time_period": [{"start_date": start_date, "end_date": end_date}],
             "naics_codes": {"require": naics_codes},
             "award_type_codes": ["A", "B", "C", "D"],
+            # Narrow to DoD-funded awards server-side — avoids scoring irrelevant
+            # civilian agency awards that happen to share our NAICS codes
+            "agencies": [
+                {"type": "funding", "tier": "toptier", "name": "Department of Defense"}
+            ],
         },
         "fields": [
             "Award ID",
@@ -401,12 +406,15 @@ def fetch_usaspending_awards() -> list[dict[str, Any]]:
 
 def fetch_expiring_contracts(days_min: int = 180, days_max: int = 730) -> list[dict[str, Any]]:
     """
-    Find target-space contracts expiring 6 months to 2 years from now.
+    Find DoD contracts in our NAICS space expiring 6 months to 2 years from now.
 
-    Strategy:
-    - Query a 5-year award window sorted ascending by End Date
-    - Paginate until results move past the target expiry window
-    - Stop early once we have enough candidates
+    Server-side filters: DoD agency, NAICS, award type — the API handles these.
+    No time_period filter: we want active contracts regardless of award date,
+    including multi-year IDIQs and long-duration awards placed 5+ years ago.
+    The 180-730 day expiration horizon is applied client-side in Python since
+    USASpending does not document a server-side end-date-range filter for this
+    endpoint. Results are sorted ascending by End Date so the target window
+    appears early and pagination exits once we've passed it.
     """
     profile = _load_profile()
     naics_codes = [
@@ -417,17 +425,18 @@ def fetch_expiring_contracts(days_min: int = 180, days_max: int = 730) -> list[d
     expire_min = now + timedelta(days=days_min)
     expire_max = now + timedelta(days=days_max)
 
-    start_date = (now - timedelta(days=5 * 365)).strftime("%Y-%m-%d")
-    end_date = now.strftime("%Y-%m-%d")
-
     expiring: list[dict[str, Any]] = []
 
     for page in range(1, 11):
         payload = {
             "filters": {
-                "time_period": [{"start_date": start_date, "end_date": end_date}],
+                # No time_period — we want ALL active DoD contracts in scope,
+                # not just recently awarded ones.
                 "naics_codes": {"require": naics_codes},
                 "award_type_codes": ["A", "B", "C", "D"],
+                "agencies": [
+                    {"type": "funding", "tier": "toptier", "name": "Department of Defense"}
+                ],
             },
             "fields": [
                 "Award ID",
