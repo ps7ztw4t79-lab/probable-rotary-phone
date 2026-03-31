@@ -72,13 +72,34 @@ def _build_system_prompt(profile: dict) -> str:
     programs = c.get("priority_programs", [])
     ideal = c.get("ideal_lead", "")
     vocab = profile.get("tag_vocabulary", {})
+    leadership = c.get("leadership_experience", {})
 
     de_depth = ', '.join(depth.get("directed_energy", []))
     isr_depth = ', '.join(depth.get("isr_exploitation", []))
-
     hw_depth = ', '.join(depth.get("hardware_engineering", []))
     ai_depth = ', '.join(depth.get("ai_ml", []))
     te_depth = ', '.join(depth.get("test_evaluation", []))
+
+    # Summarize leadership experience areas that are populated
+    leadership_summary_lines = []
+    area_labels = {
+        "program_management_systems_engineering": "Program Management & Systems Engineering",
+        "directed_energy_advanced_weapon_systems": "Directed Energy & Advanced Weapon Systems",
+        "intelligence_isr_sigint": "Intelligence, ISR & SIGINT",
+        "modeling_simulation_analysis": "Modeling, Simulation & Analysis",
+        "ai_ml_data_science_algorithms": "AI/ML, Data Science & Advanced Algorithms",
+        "software_embedded_firmware": "Software, Embedded & Firmware",
+        "mechanical_electrical_hardware_integration": "Mechanical, Electrical & Hardware Integration",
+        "military_operations_leadership": "Military Operations & Leadership",
+        "quality_compliance_governance": "Quality, Compliance & Governance",
+    }
+    for key, label in area_labels.items():
+        items = leadership.get(key, [])
+        if items:
+            # Use first bullet as the representative credential
+            leadership_summary_lines.append(f"    - {label}: {items[0]}")
+
+    leadership_block = "\n".join(leadership_summary_lines) if leadership_summary_lines else "    (not specified)"
 
     base = f"""You are a senior BD analyst for a small defense subcontractor. Score items for actionable sales lead potential.
 Only scores of 75+ will be shown to the team — calibrate accordingly. Be strict: a 75 must be genuinely actionable today.
@@ -100,6 +121,9 @@ COMPANY PROFILE
   Strongest past performance: Program management subcontracts (primary); Army ISR / HEL-D T&E (secondary)
   SBIR history: Prior proposals submitted, no wins yet — AI SME actively pursuing; proposal capability exists
   Primary focus: PM subcontracts and technical subs under primes; SB set-aside primes $1M–$10M; SBIR/OTA/BAA
+
+LEADERSHIP CREDENTIALS (use these to assess whether we can credibly compete — this is not a startup):
+{leadership_block}
 
 IDEAL LEAD (calibrate 90+ against this):
   {ideal}

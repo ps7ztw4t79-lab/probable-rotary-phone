@@ -254,6 +254,64 @@ company:
       When recommending actions, PM subcontract positions under a prime
       are the most credible near-term pursuit path alongside technical subs.
 
+  # Core experience of company leadership — informs credibility across capability areas
+  # The scorer uses this to assess whether an opportunity is genuinely in our wheelhouse
+  leadership_experience:
+    program_management_systems_engineering:
+      - "Managed large, complex defense and aerospace programs across the full lifecycle: concept development, design, integration, test, demonstration, and transition"
+      - Directed multi-disciplinary engineering teams (mechanical, electrical, software, embedded, systems) ranging from small technical teams to organizations exceeding 100 personnel
+      - Executed programs with combined ceilings ranging from tens of millions to multiple billions of dollars, maintaining cost, schedule, and technical performance
+      - Led hardware-in-the-loop laboratories, integration facilities, and test environments supporting advanced weapon systems and sensor technologies
+      - "Oversaw Earned Value Management (EVM), risk and opportunity management, subcontractor coordination, and government interface activities"
+      - Delivered prototype systems on accelerated schedules, including recovery from significant schedule delays
+    directed_energy_advanced_weapon_systems:
+      - Led development and integration of high-energy laser and high-power microwave systems for counter-UAS, C-RAM, and missile defense applications
+      - Directed design and implementation of beam control, power, thermal management, command and control, and tracking subsystems
+      - Managed system upgrades and demonstrations for mobile and vehicle-mounted directed energy platforms
+      - Supported modeling, simulation, validation, verification, and training activities for directed energy weapon systems
+      - Coordinated live-fire tests, range demonstrations, and operational evaluations in support of government customers
+    intelligence_isr_sigint:
+      - Provided senior technical and operational support for intelligence, surveillance, and reconnaissance (ISR) modernization initiatives
+      - Led integration, testing, accreditation, and operational employment of SIGINT, PED, and multi-INT exploitation systems
+      - Served as technical subject matter expert advising senior government stakeholders on ISR capabilities, concepts of operation, and employment strategies
+      - Supported experimentation, wargaming, and joint exercises integrating emerging ISR technologies
+      - Developed intelligence products, briefings, and assessments informing policy, acquisition, and operational decisions
+    modeling_simulation_analysis:
+      - Developed and maintained high-fidelity modeling and simulation environments supporting missile defense, ISR, and weapon system analysis
+      - Designed and implemented tools for Monte Carlo analysis, design of experiments, and distributed simulation execution
+      - Supported intelligence and operational studies across the full analytic lifecycle, from requirements definition through product delivery
+      - Built visualization and post-processing tools enabling analysts to interpret complex simulation and sensor data
+      - Provided training, documentation, and user support for modeling and simulation platforms
+    ai_ml_data_science_algorithms:
+      - Designed and deployed AI/ML solutions for tracking, sensor fusion, anomaly detection, route planning, decision support, and predictive analytics
+      - Developed tactically deployable AI pipelines supporting heterogeneous compute (CPU, GPU, FPGA) at the edge
+      - Created neural network models for atmospheric effects, image similarity, object detection, and performance prediction
+      - Implemented graph-based and probabilistic methods to assess system tradeoffs and operational value
+      - Applied reinforcement learning, optimization, and statistical estimation techniques to fire control, sensor performance, and mission planning problems
+    software_embedded_firmware:
+      - Developed real-time and embedded software in C/C++, Python, Java, MATLAB, and related languages for defense and aerospace systems
+      - Built graphical user interfaces and diagnostic tools for laboratory and operational environments
+      - Designed Linux drivers, firmware, and FPGA logic to interface with sensors, cameras, and high-speed data links
+      - Automated build, deployment, and configuration processes using scripting and DevOps practices
+      - Integrated software with hardware platforms including SoCs, FPGAs, cameras, and networking infrastructure
+    mechanical_electrical_hardware_integration:
+      - Designed electro-mechanical systems, structures, and enclosures for airborne, ground, and space platforms
+      - Led integration of sensors, power systems, thermal systems, and weapon subsystems onto vehicles and test platforms
+      - Applied finite element analysis (FEA), computational fluid dynamics (CFD), and tolerance analysis to optimize designs
+      - Supported fabrication, assembly, test, and checkout of prototypes and production hardware
+      - Developed training materials, user manuals, and operational procedures for deployed systems
+    military_operations_leadership:
+      - Led and managed large operational units, including planning, training, logistics, intelligence, and readiness activities
+      - Executed multinational and joint operations, coordinating with allied forces and international partners
+      - Managed significant operational budgets and accountable property portfolios
+      - Conducted leader engagements, negotiations, and advisory activities with government and military stakeholders
+      - Developed doctrine, standard operating procedures, and training programs
+    quality_compliance_governance:
+      - Supported establishment and maintenance of certified Quality Management Systems (e.g., AS9100)
+      - Led internal and external audits, process documentation, and compliance activities
+      - Supported CPAR execution and customer performance reporting
+      - Ensured accreditation, verification, and validation of systems supporting classified and sensitive missions
+
   # Opportunity size filter — minimum worth tracking
   min_opportunity_value: "$1M"
   target_opportunity_range: "$1M – $10M (subcontracts and small primes)"
