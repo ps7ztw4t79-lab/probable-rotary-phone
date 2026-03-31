@@ -54,7 +54,7 @@ jobs:
           MIN_OPPORTUNITY_SCORE: ${{ vars.MIN_OPPORTUNITY_SCORE || '50' }}
           LOOKBACK_DAYS: ${{ vars.LOOKBACK_DAYS || '7' }}
           # Set to 'true' to skip deduplication (useful for testing)
-          SKIP_DEDUP: ${{ vars.SKIP_DEDUP || 'false' }}
+          SKIP_DEDUP: ${{ vars.SKIP_DEDUP || 'true' }}
 
       - name: Save deduplication state
         if: success()
