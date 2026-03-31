@@ -130,7 +130,7 @@ PRIMARY PRIME (IRT is the established teaming path):
   - recommended_action should say "Contact IRT/IRTC BD" when IRT is the likely entry point.
 
 SCORING RULES — be precise, not generous:
-  90-100 → G-2 ISR Task Force recompete signal OR named priority program (TITAN, Linchpin,
+  90-100 → G-2 ISR Task Force recompete signal OR named priority program (TITAN,
             DE-MSHORAD, HEL-D) + Huntsville/AFC/DEVCOM + clear immediate action → act TODAY
   85-89  → MSIC or MDA opportunity (CGO relationships) OR IRT/IRTC award in a relevant area
             OR open SBIR topic from Army/DEVCOM/MDA touching AI/ISR/DE
@@ -148,8 +148,16 @@ DO NOT score 75+ if:
   - The technology area is right but the agency is not in our target list
   - The opportunity is over $50M unrestricted prime (not accessible as a sub without a prime relationship)
 
-IMPORTANT
-  - PRIMARY recommended_action: "Contact IRT/IRTC BD" when IRT is the natural entry point
+IMPORTANT — REALISTIC RECOMMENDED ACTIONS
+  - Match the action to what the source actually enables. A news article is intel, not a door opener.
+  - For NEWS ARTICLES: actions must be realistic next steps — e.g., "Monitor SAM.gov for solicitation
+    tied to [program]", "Flag for IRT/IRTC BD conversation at next touchpoint", "Track for
+    pre-solicitation notice from Army G-2 / AFC", "Add to BD pipeline watchlist". Do NOT suggest
+    calling government program offices or senior officials based on a news article alone.
+  - For SOLICITATIONS / SAM NOTICES (Sources Sought, RFI, BAA, RFP): direct outreach or response
+    actions are appropriate — name the specific vehicle, office, or prime entry point.
+  - PRIMARY recommended_action: "Contact IRT/IRTC BD" only when IRT is a plausible prime and there
+    is an actual procurement signal (not just a news mention).
   - Secondary primes to name when IRT is not the fit: Northrop Grumman (DE), Leidos/Dynetics
     (Army ISR), Torch Technologies (AFC small biz), COLSA (Redstone support), Raytheon (HEL/EW),
     L3Harris (ISR), Boeing (AFC/Army aviation), Booz Allen (intel programs)
@@ -413,8 +421,12 @@ These are the week's TOP {len(top)} leads (already screened for relevance). For 
 1. Assign a REVISED relevance_score (0-100) — a 75 must be genuinely actionable TODAY
    for a ~$5M Huntsville company. Upgrade items Haiku undersold; downgrade weaker ones.
 2. ONE sentence: the specific BD angle for this company — no fluff
-3. ONE sentence recommended_action naming a specific office, person type, or move
-   (e.g. "Contact IRT/IRTC BD for pre-award teaming on recompete")
+3. ONE sentence recommended_action that is realistically achievable based on the source type:
+   - News articles → monitor / track / flag for BD pipeline (e.g., "Monitor SAM.gov for
+     a follow-on solicitation tied to this program")
+   - Solicitations / SAM notices → direct action naming a specific office or prime entry point
+     (e.g., "Contact IRT/IRTC BD for pre-award teaming on recompete")
+   Never suggest cold-calling government officials or program offices based on a news article alone.
 4. 2-4 tags chosen ONLY from this vocabulary:
    Technology: {', '.join(vocab.get('technology', []))}
    Agency:     {', '.join(vocab.get('agency', []))}

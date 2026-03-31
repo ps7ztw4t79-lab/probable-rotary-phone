@@ -95,7 +95,6 @@ company:
   # Highest-priority named programs — items touching these score maximum
   priority_programs:
     - TITAN (Tactical Intel Targeting Access Node) — Army AFC ISR ground station
-    - Project Linchpin — AFC AI-enabled targeting and decision support
     - HEL-D (High Energy Laser Demonstrator) — Army directed energy
     - DE-MSHORAD (Directed Energy Maneuver SHORAD)
     - Army G-2 ISR Task Force — ACTIVE WORK, recompete to watch
@@ -147,7 +146,7 @@ company:
     An integration, prototyping, or ISR-related contract at Army Futures
     Command, Army G-2, MSIC, or MDA in Huntsville, AL — especially anything
     touching ISR exploitation, AI/ML targeting, or directed energy — in the
-    $1M–$10M range. Programs like TITAN, Project Linchpin, DE-MSHORAD, HEL-D,
+    $1M–$10M range. Programs like TITAN, DE-MSHORAD, HEL-D,
     or any AFC/G-2/MSIC prototyping OTA are the bullseye. A recompete signal
     on the ISR Task Force work (G-2) is maximum priority. A subcontract
     position under IRT on any of these programs is equally ideal.
@@ -187,7 +186,7 @@ company:
     - Autonomous Systems — ISR exploitation background + AI/ML + edge compute
     - IC Threat Simulation — M&S tool development for IC and Army intelligence customers
     - TITAN / next-gen Army ISR architecture
-    - Project Linchpin and AI-enabled targeting
+    - AFC AI-enabled targeting programs (Linchpin-class efforts)
     - HWIL/SIL lab expansion — weapon system and sensor integration testing
     - OTA / rapid prototyping at AFC, DEVCOM, and MDA
     - SBIR/STTR prime contracts — AI, ISR, edge computing, FPGA signal processing
@@ -323,8 +322,6 @@ keywords:
   high_priority:
     # Named priority programs — absolute highest value
     - TITAN
-    - Project Linchpin
-    - Linchpin
     - DE-MSHORAD
     - HEL-D
     - HEL-TVD
@@ -553,7 +550,6 @@ sam_search_terms:
   - "MDA Missile Defense Agency systems engineering Huntsville"
   # Named priority programs
   - "TITAN ISR Army Futures Command"
-  - "Project Linchpin AI targeting Army"
   - "high energy laser directed energy Army"
   - "HEL lethality systems engineering Redstone"
   - "Army ISR exploitation SIGINT sensor fusion"
