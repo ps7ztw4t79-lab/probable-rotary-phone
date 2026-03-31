@@ -547,8 +547,6 @@ rss_feeds:
     url: "https://news.usni.org/feed"
   - name: "Air Force Magazine"
     url: "https://www.airforcemag.com/feed/"
-  - name: "DARPA News"
-    url: "https://www.darpa.mil/feeds/news.xml"
   - name: "AFWERX"
     url: "https://afwerx.com/feed/"
 
