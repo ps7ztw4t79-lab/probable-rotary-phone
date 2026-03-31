@@ -3,10 +3,12 @@ fetcher.py — Pull defense news (RSS), contract opportunities (SAM.gov, optiona
 and contract award intelligence (USASpending.gov + FPDS, no API keys required).
 """
 
+import json
 import os
 import re
 import logging
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any
 from urllib.parse import quote_plus
 
@@ -110,21 +112,48 @@ def fetch_all_news() -> list[dict[str, Any]]:
 # ──────────────────────────────────────────────────────────────────────────────
 
 _SAM_URL = "https://api.sam.gov/opportunities/v2/search"
+_CACHE_DIR = Path(".cache")
+
+
+def _sam_cache_file() -> Path:
+    today = datetime.now(timezone.utc).strftime("%Y%m%d")
+    return _CACHE_DIR / f"sam_{today}.json"
+
+
+def _sam_quota_file() -> Path:
+    today = datetime.now(timezone.utc).strftime("%Y%m%d")
+    return _CACHE_DIR / f"sam_quota_exhausted_{today}.json"
+
+
+def _load_cached_json(path: Path) -> Any | None:
+    try:
+        if path.exists():
+            return json.loads(path.read_text())
+    except Exception:
+        pass
+    return None
+
+
+def _save_cached_json(path: Path, data: Any) -> None:
+    try:
+        _CACHE_DIR.mkdir(exist_ok=True)
+        path.write_text(json.dumps(data, indent=2))
+    except Exception as exc:
+        log.warning("Failed to save cache %s: %s", path, exc)
 
 
 def fetch_sam_opportunities() -> list[dict[str, Any]]:
     """
     Fetch recent DoD contract opportunities from SAM.gov.
 
-    Uses a broad DoD department filter — one request returns up to 100
-    opportunities, then keyword pre-filter and Claude scoring handle relevance.
+    Results are cached per UTC day. If the quota is exhausted mid-day the
+    sentinel file prevents further calls and returns whatever was cached.
 
-    Requires SAM_GOV_API_KEY (set as secret SAM_api in GitHub Actions).
+    Requires SAM_GOV_API_KEY (GitHub secret name: SAM_api).
 
-    IMPORTANT: SAM.gov free-tier "public" keys are IP-restricted and are
-    blocked by GitHub Actions (AWS) IPs. If you see 403 errors in the logs,
-    you need a SAM.gov System Account key (requires org registration at
-    https://sam.gov/profile/details under "System Accounts").
+    NOTE: SAM.gov free/personal keys are IP-restricted and blocked from
+    GitHub Actions (AWS) IPs. A System Account key is required for CI use.
+    Register at https://sam.gov/profile/details under "System Accounts".
     """
     api_key = os.getenv("SAM_GOV_API_KEY", "").strip()
     if not api_key:
@@ -134,8 +163,26 @@ def fetch_sam_opportunities() -> list[dict[str, Any]]:
         )
         return []
 
+    cache_file = _sam_cache_file()
+    quota_file = _sam_quota_file()
+
+    # Quota exhausted earlier today — don't burn more calls
+    if quota_file.exists():
+        cached = _load_cached_json(cache_file)
+        if cached is not None:
+            log.info("SAM.gov: quota exhausted earlier today; using cached results (%d opps)", len(cached))
+            return cached
+        log.info("SAM.gov: quota exhausted earlier today; no cache available")
+        return []
+
+    # Reuse today's successful fetch if present
+    cached = _load_cached_json(cache_file)
+    if cached is not None:
+        log.info("SAM.gov: using cached results from %s (%d opps)", cache_file.name, len(cached))
+        return cached
+
     log.info("SAM.gov: API key present (%s...)", api_key[:6])
-    posted_from = (_cutoff_dt()).strftime("%m/%d/%Y")
+    posted_from = _cutoff_dt().strftime("%m/%d/%Y")
     posted_to   = datetime.now(timezone.utc).strftime("%m/%d/%Y")
     all_opps: list[dict[str, Any]] = []
     seen_ids: set[str] = set()
@@ -158,36 +205,35 @@ def fetch_sam_opportunities() -> list[dict[str, Any]]:
             "limit": 100,
             "offset": 0,
         }
-        log.info("SAM.gov: fetching %s solicitations %s → %s", label, posted_from, posted_to)
-        # Log the fully prepared URL (key redacted) so failures are diagnosable
+        log.info("SAM.gov: fetching %s solicitations %s -> %s", label, posted_from, posted_to)
         prepared = requests.Request("GET", _SAM_URL, params=params).prepare()
         log.info("SAM.gov request URL: %s", (prepared.url or "").replace(api_key, "REDACTED"))
         try:
             resp = requests.get(_SAM_URL, params=params, timeout=30)
 
-            # Log full error detail so failures are diagnosable in Actions logs
+            if resp.status_code == 429:
+                log.warning("SAM.gov 429 (%s): daily quota exhausted — response: %s",
+                            label, resp.text[:800].replace("\n", " "))
+                _save_cached_json(quota_file, {
+                    "status": "quota_exhausted",
+                    "at": datetime.now(timezone.utc).isoformat(),
+                })
+                if all_opps:
+                    _save_cached_json(cache_file, all_opps)
+                return all_opps
+
             if resp.status_code != 200:
-                body_preview = resp.text[:400].replace("\n", " ")
-                log.warning(
-                    "SAM.gov HTTP %s (%s) — response: %s",
-                    resp.status_code, label, body_preview,
-                )
+                log.warning("SAM.gov HTTP %s (%s) — response: %s",
+                            resp.status_code, label, resp.text[:800].replace("\n", " "))
                 if resp.status_code == 403:
-                    log.warning(
-                        "SAM.gov 403: API key is likely a public/personal key blocked "
-                        "from server IPs. A System Account key is required for CI use."
-                    )
-                elif resp.status_code == 429:
-                    log.warning("SAM.gov 429: daily quota exhausted — will retry tomorrow")
-                    break
-                resp.raise_for_status()
+                    log.warning("SAM.gov 403: key is likely blocked from server IPs — "
+                                "a System Account key is required for CI use")
+                continue
 
             data = resp.json()
             records = data.get("opportunitiesData", [])
-            log.info(
-                "SAM.gov %s: %d records returned (totalRecords=%s)",
-                label, len(records), data.get("totalRecords", "?"),
-            )
+            log.info("SAM.gov %s: %d records (totalRecords=%s)",
+                     label, len(records), data.get("totalRecords", "?"))
 
             for opp in records:
                 notice_id = opp.get("noticeId", "")
@@ -201,43 +247,41 @@ def fetch_sam_opportunities() -> list[dict[str, Any]]:
                     or opp.get("officeAddress", {}).get("city", "")
                 )
 
-                # SAM.gov v2 search returns description as a resource URL, not
-                # text. Build a useful description from structured fields instead.
+                # SAM.gov v2 search returns description as a resource URL path,
+                # not text. Build a useful description from structured fields.
                 raw_desc = opp.get("description") or ""
                 if raw_desc.startswith("/") or raw_desc.startswith("http"):
-                    raw_desc = ""  # discard URL — not useful to the scorer
+                    raw_desc = ""
                 naics_desc = opp.get("naicsDescription", "")
                 set_aside_desc = opp.get("typeOfSetAsideDescription", "")
                 place = (opp.get("placeOfPerformance") or {}).get("city", {})
                 place_str = place.get("name", "") if isinstance(place, dict) else ""
-                description_parts = [p for p in [naics_desc, set_aside_desc, place_str, raw_desc] if p]
-                description = "; ".join(description_parts)[:700]
+                description = "; ".join(
+                    p for p in [naics_desc, set_aside_desc, place_str, raw_desc] if p
+                )[:700]
 
-                all_opps.append(
-                    {
-                        "type": "opportunity",
-                        "source": "SAM.gov",
-                        "title": (opp.get("title") or "").strip(),
-                        "url": f"https://sam.gov/opp/{notice_id}/view",
-                        "agency": agency,
-                        "naics": opp.get("naicsCode", ""),
-                        "set_aside": opp.get("typeOfSetAside", "") or set_aside_desc,
-                        "notice_type": opp.get("type", ""),
-                        "solicitation_number": opp.get("solicitationNumber", ""),
-                        "posted_date": opp.get("postedDate", ""),
-                        "response_deadline": opp.get("responseDeadLine", ""),
-                        "description": description,
-                        "notice_id": notice_id,
-                    }
-                )
+                all_opps.append({
+                    "type": "opportunity",
+                    "source": "SAM.gov",
+                    "title": (opp.get("title") or "").strip(),
+                    "url": f"https://sam.gov/opp/{notice_id}/view",
+                    "agency": agency,
+                    "naics": opp.get("naicsCode", ""),
+                    "set_aside": opp.get("typeOfSetAside", "") or set_aside_desc,
+                    "notice_type": opp.get("type", ""),
+                    "solicitation_number": opp.get("solicitationNumber", ""),
+                    "posted_date": opp.get("postedDate", ""),
+                    "response_deadline": opp.get("responseDeadLine", ""),
+                    "description": description,
+                    "notice_id": notice_id,
+                })
 
-        except requests.HTTPError:
-            pass  # already logged above with response body
         except Exception as exc:
             log.warning("SAM.gov fetch failed (%s): %s", label, exc)
         else:
             import time; time.sleep(1)  # brief pause between the two dept queries
 
+    _save_cached_json(cache_file, all_opps)
     log.info("SAM.gov total: %d unique opportunities", len(all_opps))
     return all_opps
 
@@ -381,6 +425,7 @@ def fetch_expiring_contracts(days_min: int = 180, days_max: int = 730) -> list[d
             "naics_codes": {"require": naics_codes},
             "award_type_codes": ["A", "B", "C", "D"],
         },
+        # Field names match USASpending v2 spending_by_award documented names
         "fields": [
             "Award ID",
             "Recipient Name",
@@ -388,30 +433,39 @@ def fetch_expiring_contracts(days_min: int = 180, days_max: int = 730) -> list[d
             "Description",
             "Awarding Agency",
             "Awarding Sub Agency",
+            "Funding Agency",
+            "Funding Sub Agency",
             "NAICS Code",
             "NAICS Description",
-            "Period of Performance Start Date",
-            "Period of Performance Current End Date",
-            "Contract Award Type",
+            "Start Date",
+            "End Date",
+            "Award Type",
         ],
-        "sort": "Period of Performance Current End Date",
+        "sort": "End Date",
         "order": "asc",
         "limit": 100,
         "page": 1,
     }
 
     try:
-        log.info("USASpending.gov: scanning for recompetes expiring %d–%d days out", days_min, days_max)
+        log.info("USASpending.gov: scanning for recompetes expiring %d-%d days out", days_min, days_max)
         resp = requests.post(_USASPENDING_URL, json=payload, timeout=20)
+        if resp.status_code != 200:
+            log.warning("USASpending expiring contracts HTTP %s — response: %s",
+                        resp.status_code, resp.text[:1200].replace("\n", " "))
         resp.raise_for_status()
         results = resp.json().get("results", [])
+    except requests.HTTPError as exc:
+        body = exc.response.text[:1200].replace("\n", " ") if exc.response is not None else ""
+        log.warning("USASpending expiring contracts fetch failed: %s | body=%s", exc, body)
+        return []
     except Exception as exc:
         log.warning("USASpending expiring contracts fetch failed: %s", exc)
         return []
 
     expiring: list[dict[str, Any]] = []
     for award in results:
-        end_str = award.get("Period of Performance Current End Date", "")
+        end_str = award.get("End Date", "")
         if not end_str:
             continue
         try:
@@ -425,7 +479,12 @@ def fetch_expiring_contracts(days_min: int = 180, days_max: int = 730) -> list[d
 
         days_remaining = (end_dt - now).days
         recipient = award.get("Recipient Name", "Unknown")
-        agency = award.get("Awarding Sub Agency") or award.get("Awarding Agency", "")
+        agency = (
+            award.get("Awarding Sub Agency")
+            or award.get("Awarding Agency")
+            or award.get("Funding Sub Agency")
+            or award.get("Funding Agency", "")
+        )
         amount = award.get("Award Amount") or 0
         description = (award.get("Description") or "")[:500]
         award_id = award.get("Award ID", "")

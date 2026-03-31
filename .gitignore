@@ -4,6 +4,9 @@ __pycache__/
 *.pyo
 .env
 
+# SAM.gov daily response cache (auto-generated, ephemeral)
+.cache/
+
 # Runtime state files are intentionally tracked — seen_items.json persists
 # deduplication state between GitHub Actions runs; feedback_log.json stores
 # team scoring calibration. Do not add these to .gitignore.
