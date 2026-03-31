@@ -33,7 +33,7 @@ load_dotenv()
 
 from fetcher import fetch_all_news, fetch_sam_opportunities, fetch_usaspending_awards, fetch_expiring_contracts, fetch_fpds_awards, fetch_sbir_topics
 from scorer import score_items, rescore_top_items, synthesize_news_trends
-from email_builder import build_email, send_email
+from email_builder import build_email, build_plain_text, send_email
 
 logging.basicConfig(
     level=logging.INFO,
@@ -308,10 +308,20 @@ def run(dry_run: bool = False) -> None:
         trend_delta=trend_delta,
         quiet_day=quiet_day,
     )
+    plain = build_plain_text(
+        news_items=news_final,
+        opportunities=opps_final,
+        recompetes=recompetes_final,
+        run_dt=run_dt,
+        trend_delta=trend_delta,
+        quiet_day=quiet_day,
+    )
 
     if dry_run:
         log.info("DRY RUN — printing HTML to stdout (not sending)")
         print(html)
+        log.info("DRY RUN — plain text preview:")
+        log.info(plain[:800])
         # Still save state on dry runs so deduplication works
         _update_and_save_state(state, news_raw, opps_raw, high_count, run_dt)
         return
@@ -323,7 +333,7 @@ def run(dry_run: bool = False) -> None:
             if quiet_day
             else teaser_subject
         )
-        send_email(html, subject=subject)
+        send_email(html, subject=subject, plain_text=plain)
         log.info("Digest sent successfully.")
     except EnvironmentError as exc:
         log.error("Configuration error: %s", exc)
