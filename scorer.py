@@ -229,18 +229,12 @@ Return a JSON array (no markdown, no commentary) with one object per item:
     "index": <int>,
     "relevance_score": <0-100>,
     "lead_type": "<opportunity|teaming|award_intel|market_intel|program_news>",
-    "rationale": "<REQUIRED: 1-2 specific sentences, minimum 18 words total, explaining why this item matters to this company now>",
+    "rationale": "<1-2 sentences explaining WHY this specific item matters to THIS company — which capability it maps to, which program or agency connection it activates, and what the BD angle is. Never leave blank.>",
     "recommended_action": "<specific next step>",
     "tags": ["<tag1>", "<tag2>"]
   }},
   ...
 ]
-
-Hard requirements:
-- rationale must never be empty, generic, or a fragment (avoid phrases like "relevant to capabilities").
-- rationale must reference at least one concrete anchor from the item (program, agency, notice type, prime, vehicle, or deadline).
-- recommended_action must never be empty.
-- If uncertain, still provide the best specific rationale/action rather than leaving fields blank.
 
 Items:
 {json.dumps(condensed, indent=2)}"""
@@ -450,15 +444,14 @@ def rescore_top_items(
 These are the week's TOP {len(top)} leads (already screened for relevance). For each:
 1. Assign a REVISED relevance_score (0-100) — a 75 must be genuinely actionable TODAY
    for a ~$5M Huntsville company. Upgrade items Haiku undersold; downgrade weaker ones.
-2. ONE sentence rationale (REQUIRED, minimum 16 words): the specific BD angle for this company — no fluff.
-   It must cite at least one concrete anchor from the item (program, agency, notice type, prime, vehicle, or deadline).
+2. ONE sentence for rationale: the specific BD angle — which capability maps to this, which
+   relationship or program this activates. Be concrete. Never leave blank.
 3. ONE sentence recommended_action that is realistically achievable based on the source type:
    - News articles → monitor / track / flag for BD pipeline (e.g., "Monitor SAM.gov for
      a follow-on solicitation tied to this program")
    - Solicitations / SAM notices → direct action naming a specific office or prime entry point
      (e.g., "Contact IRT/IRTC BD for pre-award teaming on recompete")
    Never suggest cold-calling government officials or program offices based on a news article alone.
-   recommended_action is REQUIRED and must never be empty.
 4. 2-4 tags chosen ONLY from this vocabulary:
    Technology: {', '.join(vocab.get('technology', []))}
    Agency:     {', '.join(vocab.get('agency', []))}
