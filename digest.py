@@ -217,15 +217,32 @@ def run(dry_run: bool = False) -> None:
         # recompetes intentionally not deduped — these are long-horizon watches
         # meant to be visible each week until the contract expires
 
+    # Within-run dedup: if the same USASpending award appears in both usa_awards
+    # (recent awards) and recompetes (expiring contracts), keep the recompete entry
+    # since it carries richer expiration context.
+    recompete_urls = {rc.get("url") for rc in recompetes if rc.get("url")}
+    usa_awards = [a for a in usa_awards if a.get("url") not in recompete_urls]
+
+    # Within-run dedup across SAM + USASpending by URL (keeps first occurrence)
+    seen_this_run: set[str] = set()
+    deduped_opps: list[dict] = []
+    for item in sam_opps + usa_awards:
+        url = item.get("url", "")
+        if url and url in seen_this_run:
+            continue
+        if url:
+            seen_this_run.add(url)
+        deduped_opps.append(item)
+
     # Cross-reference expiring contracts with news — tag any news article that
     # mentions the same agency so Claude can see the connection during scoring.
     _tag_related_news(recompetes, news_raw)
 
-    opps_raw = sam_opps + usa_awards + recompetes + fpds_awards + sbir_topics
+    opps_raw = deduped_opps + recompetes + fpds_awards + sbir_topics
 
     log.info(
-        "  News: %d  |  SAM: %d  |  USASpending: %d  |  Recompetes: %d  |  FPDS: %d  |  SBIR: %d",
-        len(news_raw), len(sam_opps), len(usa_awards), len(recompetes), len(fpds_awards), len(sbir_topics),
+        "  News: %d  |  SAM: %d  |  USASpending: %d  |  Recompetes: %d  |  FPDS: %d  |  SBIR: %d  |  Opps after dedup: %d",
+        len(news_raw), len(sam_opps), len(usa_awards), len(recompetes), len(fpds_awards), len(sbir_topics), len(deduped_opps),
     )
 
     # ── 2. Score with Haiku ───────────────────────────────────────────────────
