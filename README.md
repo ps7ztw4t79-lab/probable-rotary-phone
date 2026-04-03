@@ -1,21 +1,29 @@
 # Defense BD Digest
 
-A weekly email digest of curated defense contracting news and SAM.gov
-contract opportunities, scored for relevance to your company using Claude AI
+A daily email digest of curated defense contracting news and contract
+opportunities, scored for relevance to your company using Claude AI
 and delivered via SendGrid.
 
 ## What it does
 
-Every week it:
+Every run it:
 1. Pulls the latest articles from **10+ defense RSS feeds** (Defense News,
    Breaking Defense, C4ISRNET, DoD News, AUSA, USNI, etc.)
 2. Searches **SAM.gov** for new contract opportunities matching your
    capability keywords
-3. Sends every item through **Claude AI**, which reads your company profile
-   and returns a 0-100 relevance score, a rationale, and a specific
-   recommended next action
-4. Assembles a **formatted HTML email** sorted by score and sends it via
-   **SendGrid**
+3. Pulls recent awards and **expiring contracts** from **USASpending.gov**
+   and **FPDS** as recompete intelligence
+4. Fetches open **SBIR topics** from SBIR.gov
+5. Runs everything through a **two-stage Claude AI pipeline**:
+   - **Stage 1 — Claude Haiku** pre-scores up to 120 news articles and all
+     opportunities; synthesizes cross-article trends; fetches full article
+     text for news items scoring ≥ 65
+   - **Stage 2 — Claude Opus** deep-scores the top 40 news + top 20
+     opportunities, producing richer rationales and recommended actions
+6. Assembles a **formatted HTML email** (News → Opportunities → Recompete
+   Watch) sorted by score and sends it via **SendGrid**
+
+Only items scoring 70+ appear in the final email.
 
 ---
 
@@ -45,10 +53,10 @@ Edit `.env`:
 | `DIGEST_FROM_EMAIL` | **Yes** | Must be a verified SendGrid sender |
 | `DIGEST_FROM_NAME` | No | Defaults to `Defense BD Digest` |
 | `DIGEST_TO_EMAILS` | **Yes** | Comma-separated list of recipients |
-| `SAM_GOV_API_KEY` | Recommended | Free at [sam.gov/profile/details](https://sam.gov/profile/details) — without this, no contract opportunities are included |
-| `MIN_NEWS_SCORE` | No | Default `45`. Raise to tighten filter. |
-| `MIN_OPPORTUNITY_SCORE` | No | Default `55`. |
-| `LOOKBACK_DAYS` | No | Default `7` (weekly). |
+| `SAM_GOV_API_KEY` | Recommended | Free at [sam.gov/profile/details](https://sam.gov/profile/details) — without this, no SAM opportunities are included |
+| `MIN_NEWS_SCORE` | No | Default `50`. Haiku pre-filter threshold — raise to tighten. |
+| `MIN_OPPORTUNITY_SCORE` | No | Default `50`. Haiku pre-filter threshold. |
+| `LOOKBACK_DAYS` | No | Default `7`. How far back to pull RSS articles. |
 
 ### 3. Update your company profile
 
@@ -80,7 +88,7 @@ python digest.py
 
 ---
 
-## Scheduling (weekly automation)
+## Scheduling
 
 ### Linux / macOS — cron
 
@@ -143,15 +151,15 @@ jobs:
 
 In `.env`:
 ```
-MIN_OPPORTUNITY_SCORE=65   # only show very strong contract matches
-MIN_NEWS_SCORE=50          # only show clearly relevant articles
+MIN_OPPORTUNITY_SCORE=65   # only pass very strong contract matches to Opus
+MIN_NEWS_SCORE=55          # only pass clearly relevant articles to Opus
 ```
 
 ### Add keywords
 
 In `company_profile.yaml`, add terms to `keywords.high_priority` or
-`keywords.medium_priority`. The AI scorer receives the full keyword list
-as context when evaluating each item.
+`keywords.medium_priority`. The keyword list is used for the Haiku pre-filter
+and as context during Opus scoring.
 
 ### Add or remove news sources
 
@@ -161,7 +169,7 @@ works.
 ### Change SAM.gov search terms
 
 In `company_profile.yaml`, edit `sam_search_terms`. Each term produces one
-API call, so keep the list focused (10-15 terms is a good range).
+API call, so keep the list focused (10–15 terms is a good range).
 
 ---
 
@@ -169,10 +177,12 @@ API call, so keep the list focused (10-15 terms is a good range).
 
 ```
 probable-rotary-phone/
-├── digest.py              Main entry point
-├── fetcher.py             RSS + SAM.gov data retrieval
-├── scorer.py              Claude AI relevance scoring
-├── email_builder.py       HTML email template + SendGrid delivery
+├── digest.py              Main entry point and pipeline orchestration
+├── fetcher.py             RSS, SAM.gov, USASpending, FPDS, SBIR data retrieval
+│                          and full-text article enrichment
+├── scorer.py              Claude Haiku pre-scoring, trend synthesis,
+│                          and Claude Opus deep-scoring
+├── email_builder.py       HTML + plain-text email template and SendGrid delivery
 ├── company_profile.yaml   Your company config (edit this)
 ├── requirements.txt       Python dependencies
 ├── .env.example           Environment variable template
@@ -183,11 +193,15 @@ probable-rotary-phone/
 
 ## Cost estimate
 
-| Service | Typical weekly cost |
+The pipeline uses Claude Haiku for bulk pre-scoring (cheap) and Claude Opus
+for deep-scoring the top candidates (higher quality).
+
+| Service | Typical daily cost |
 |---|---|
-| Anthropic (Claude Opus) | ~$0.20–$0.60 depending on news volume |
+| Claude Haiku (pre-scoring ~120 news + all opps) | ~$0.01–0.02 |
+| Claude Opus (deep-scoring top 20 items) | ~$0.10–0.30 |
 | SendGrid | Free tier covers up to 100 emails/day |
-| SAM.gov API | Free |
+| SAM.gov / USASpending / SBIR APIs | Free |
 | RSS feeds | Free |
 
-Total: **under $1/week** for a team of 5 recipients.
+Total: **under $0.35/day** (~$2.50/week) for a team of 5 recipients.
