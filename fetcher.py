@@ -15,6 +15,7 @@ from urllib.parse import quote, quote_plus
 import feedparser
 import requests
 import yaml
+from bs4 import BeautifulSoup
 
 log = logging.getLogger(__name__)
 
@@ -744,3 +745,77 @@ def fetch_sbir_topics() -> list[dict[str, Any]]:
 
     log.info("SBIR.gov total: %d relevant open topics found", len(topics))
     return topics
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Full-text enrichment
+# ──────────────────────────────────────────────────────────────────────────────
+
+_ENRICH_SCORE_THRESHOLD = 65
+_ENRICH_MAX_ITEMS = 20
+_ENRICH_MAX_CHARS = 2000
+_ENRICH_SKIP_DOMAINS = {"twitter.com", "x.com", "linkedin.com", "facebook.com"}
+
+
+def enrich_with_full_text(
+    items: list[dict[str, Any]],
+    min_score: int = _ENRICH_SCORE_THRESHOLD,
+) -> list[dict[str, Any]]:
+    """
+    For news items that scored >= min_score, fetch the full article page and
+    replace the RSS summary with extracted body text (up to _ENRICH_MAX_CHARS).
+    Items that fail to fetch keep their original summary. Non-news items and
+    items without a URL are left untouched.
+
+    Caps at _ENRICH_MAX_ITEMS fetches per run to bound latency.
+    """
+    candidates = [
+        item for item in items
+        if item.get("type") == "news"
+        and item.get("relevance_score", 0) >= min_score
+        and item.get("url")
+        and not any(d in item["url"] for d in _ENRICH_SKIP_DOMAINS)
+    ]
+    candidates.sort(key=lambda x: x.get("relevance_score", 0), reverse=True)
+    to_fetch = candidates[:_ENRICH_MAX_ITEMS]
+
+    if not to_fetch:
+        return items
+
+    log.info("Full-text enrichment: fetching %d articles (score >= %d)", len(to_fetch), min_score)
+
+    enriched_urls: dict[str, str] = {}
+    for item in to_fetch:
+        url = item["url"]
+        try:
+            resp = requests.get(
+                url,
+                timeout=10,
+                headers={"User-Agent": "DefenseBDDigest/1.0"},
+                allow_redirects=True,
+            )
+            resp.raise_for_status()
+            soup = BeautifulSoup(resp.text, "html.parser")
+            # Remove boilerplate tags
+            for tag in soup(["script", "style", "nav", "header", "footer",
+                              "aside", "form", "noscript"]):
+                tag.decompose()
+            text = " ".join(soup.get_text(" ", strip=True).split())
+            enriched_urls[url] = text[:_ENRICH_MAX_CHARS]
+            log.debug("Enriched: %s (%d chars)", url, len(enriched_urls[url]))
+        except Exception as exc:
+            log.debug("Full-text fetch failed for %s: %s", url, exc)
+
+    result = []
+    for item in items:
+        url = item.get("url", "")
+        if url in enriched_urls:
+            enriched = dict(item)
+            enriched["summary"] = enriched_urls[url]
+            result.append(enriched)
+        else:
+            result.append(item)
+
+    log.info("Full-text enrichment: %d/%d articles successfully enriched",
+             len(enriched_urls), len(to_fetch))
+    return result

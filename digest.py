@@ -31,7 +31,7 @@ from dotenv import load_dotenv
 # Load .env before importing modules that read env vars
 load_dotenv()
 
-from fetcher import fetch_all_news, fetch_sam_opportunities, fetch_usaspending_awards, fetch_expiring_contracts, fetch_fpds_awards, fetch_sbir_topics
+from fetcher import fetch_all_news, fetch_sam_opportunities, fetch_usaspending_awards, fetch_expiring_contracts, fetch_fpds_awards, fetch_sbir_topics, enrich_with_full_text
 from scorer import score_items, rescore_top_items, synthesize_news_trends
 from email_builder import build_email, build_plain_text, send_email
 
@@ -272,10 +272,13 @@ def run(dry_run: bool = False) -> None:
         reverse=True,
     )[:20]
 
+    # ── 2b. Enrich top news with full article text before Opus sees them ─────
+    news_filtered = enrich_with_full_text(news_filtered)
+
     # ── 3. Deep-score top items with Opus ─────────────────────────────────────
     log.info("Step 3/4 — Deep-scoring top leads with Claude Opus …")
     all_scored = news_filtered + opps_filtered
-    all_rescored = rescore_top_items(all_scored, top_n=15)
+    all_rescored = rescore_top_items(all_scored, top_n=20)
     # Opus applies the strict 70 bar via revised scores — filter and separate by type
     news_final = [i for i in all_rescored
                   if i.get("type") == "news" and i.get("relevance_score", 0) >= final_threshold]

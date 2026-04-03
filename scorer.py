@@ -216,7 +216,7 @@ def _build_user_prompt(items: list[dict], item_type: str) -> str:
             entry["response_deadline"] = item.get("response_deadline", "")
             entry["description"] = (item.get("description") or "")[:500]
         else:
-            entry["summary"] = (item.get("summary") or "")[:400]
+            entry["summary"] = (item.get("summary") or "")[:600]
             entry["published"] = item.get("published", "")
 
         condensed.append(entry)
@@ -274,6 +274,7 @@ def synthesize_news_trends(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
     article_list = "\n".join(
         f"[{i}] {item.get('title', '')} ({item.get('source', '')})"
+        + (f": {(item.get('summary') or '')[:200]}" if item.get('summary') else "")
         for i, item in enumerate(items)
     )
 
