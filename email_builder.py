@@ -172,6 +172,30 @@ def build_plain_text(
         return "\n".join(lines)
 
     # Contract opportunities
+    # News
+    if news_items:
+        lines += [SEP, "DEFENSE NEWS & MARKET INTELLIGENCE", SEP, ""]
+        for item in news_items:
+            score = item.get("relevance_score", 0)
+            meta = LEAD_TYPE_META.get(item.get("lead_type", ""), LEAD_TYPE_META["market_intel"])
+            source_date = item.get("source", "")
+            if item.get("published"):
+                source_date += f" -- {_fmt_date(item['published'])}"
+            lines.append(f"[{meta['label']}] Score: {score} ({_score_label(score)})  {source_date}")
+            lines.append(item.get("title", "")[:100])
+            lines.append(f"  Why we care: {_display_rationale(item)}")
+            if item.get("recommended_action"):
+                lines.append(f"  Action: {item['recommended_action']}")
+            if item.get("tags"):
+                lines.append(f"  Tags: {', '.join(item['tags'][:4])}")
+            if item.get("url"):
+                lines.append(f"  URL: {item['url']}")
+            if item.get("constituent_titles"):
+                lines.append("  Based on:")
+                for title in item["constituent_titles"][:4]:
+                    lines.append(f"    - {title[:90]}")
+            lines.append("")
+
     if opportunities:
         lines += [SEP, "CONTRACT OPPORTUNITIES -- SAM.gov", SEP, ""]
         for opp in opportunities:
@@ -197,30 +221,6 @@ def build_plain_text(
                 lines.append(f"  Tags: {', '.join(opp['tags'][:4])}")
             if opp.get("url"):
                 lines.append(f"  URL: {opp['url']}")
-            lines.append("")
-
-    # News
-    if news_items:
-        lines += [SEP, "DEFENSE NEWS & MARKET INTELLIGENCE", SEP, ""]
-        for item in news_items:
-            score = item.get("relevance_score", 0)
-            meta = LEAD_TYPE_META.get(item.get("lead_type", ""), LEAD_TYPE_META["market_intel"])
-            source_date = item.get("source", "")
-            if item.get("published"):
-                source_date += f" -- {_fmt_date(item['published'])}"
-            lines.append(f"[{meta['label']}] Score: {score} ({_score_label(score)})  {source_date}")
-            lines.append(item.get("title", "")[:100])
-            lines.append(f"  Why we care: {_display_rationale(item)}")
-            if item.get("recommended_action"):
-                lines.append(f"  Action: {item['recommended_action']}")
-            if item.get("tags"):
-                lines.append(f"  Tags: {', '.join(item['tags'][:4])}")
-            if item.get("url"):
-                lines.append(f"  URL: {item['url']}")
-            if item.get("constituent_titles"):
-                lines.append("  Based on:")
-                for title in item["constituent_titles"][:4]:
-                    lines.append(f"    - {title[:90]}")
             lines.append("")
 
     # Recompetes
@@ -325,28 +325,28 @@ _TEMPLATE = """<!DOCTYPE html>
   <tr>
     <td style="background:#ffffff;padding:0 32px 32px;">
 
-      {% if opportunities %}
-      <!-- ── Contract Opportunities ── -->
+      {% if news_items %}
+      <!-- ── Defense News ── -->
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td style="padding-top:28px;padding-bottom:10px;border-bottom:2px solid #e2e8f0;">
             <span style="font-size:10px;font-weight:bold;color:#475569;text-transform:uppercase;
-                         letter-spacing:1.2px;">&#9658; Contract Opportunities &mdash; SAM.gov</span>
+                         letter-spacing:1.2px;">&#9658; Defense News &amp; Market Intelligence</span>
           </td>
         </tr>
       </table>
 
-      {% for opp in opportunities %}
-      {% set meta = lead_type_meta.get(opp.lead_type, lead_type_meta['opportunity']) %}
-      {% set sc = score_color(opp.relevance_score) %}
+      {% for item in news_items %}
+      {% set meta = lead_type_meta.get(item.lead_type, lead_type_meta['market_intel']) %}
+      {% set sc = score_color(item.relevance_score) %}
       <table width="100%" cellpadding="0" cellspacing="0" border="0"
-             style="border:1px solid #e2e8f0;margin-top:14px;background:#fafbff;">
+             style="border:1px solid #e2e8f0;margin-top:12px;background:#fffdf7;">
         <tr>
           <!-- Accent bar -->
           <td width="4" style="background:{{ sc }};font-size:0;line-height:0;">&nbsp;</td>
-          <td style="padding:14px 16px;">
-            <!-- Badges -->
-            <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:8px;">
+          <td style="padding:12px 16px;">
+            <!-- Badges + source -->
+            <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:7px;">
               <tr>
                 <td style="padding-right:6px;">
                   <span style="background:{{ meta.color }};color:#ffffff;font-size:9px;font-weight:bold;
@@ -407,29 +407,29 @@ _TEMPLATE = """<!DOCTYPE html>
       {% endfor %}
       {% endif %}
 
-      {% if news_items %}
-      <!-- ── Defense News ── -->
+      {% if opportunities %}
+      <!-- ── Contract Opportunities ── -->
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td style="padding-top:{% if opportunities %}24px{% else %}28px{% endif %};
+          <td style="padding-top:{% if news_items %}24px{% else %}28px{% endif %};
                      padding-bottom:10px;border-bottom:2px solid #e2e8f0;">
             <span style="font-size:10px;font-weight:bold;color:#475569;text-transform:uppercase;
-                         letter-spacing:1.2px;">&#9658; Defense News &amp; Market Intelligence</span>
+                         letter-spacing:1.2px;">&#9658; Contract Opportunities &mdash; SAM.gov</span>
           </td>
         </tr>
       </table>
 
-      {% for item in news_items %}
-      {% set meta = lead_type_meta.get(item.lead_type, lead_type_meta['market_intel']) %}
-      {% set sc = score_color(item.relevance_score) %}
+      {% for opp in opportunities %}
+      {% set meta = lead_type_meta.get(opp.lead_type, lead_type_meta['opportunity']) %}
+      {% set sc = score_color(opp.relevance_score) %}
       <table width="100%" cellpadding="0" cellspacing="0" border="0"
-             style="border:1px solid #e2e8f0;margin-top:12px;background:#fffdf7;">
+             style="border:1px solid #e2e8f0;margin-top:14px;background:#fafbff;">
         <tr>
           <!-- Accent bar -->
           <td width="4" style="background:{{ sc }};font-size:0;line-height:0;">&nbsp;</td>
-          <td style="padding:12px 16px;">
-            <!-- Badges + source -->
-            <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:7px;">
+          <td style="padding:14px 16px;">
+            <!-- Badges -->
+            <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:8px;">
               <tr>
                 <td style="padding-right:6px;">
                   <span style="background:{{ meta.color }};color:#ffffff;font-size:9px;font-weight:bold;
