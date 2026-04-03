@@ -247,7 +247,7 @@ def run(dry_run: bool = False) -> None:
 
     # ── 2. Score with Haiku ───────────────────────────────────────────────────
     log.info("Step 2/4 — Scoring with Claude Haiku …")
-    news_prefiltered = _keyword_prefilter(news_raw, max_items=60)
+    news_prefiltered = _keyword_prefilter(news_raw, max_items=120)
     # Synthesize cross-article trends before scoring — a cluster of signals
     # can score higher than any individual article
     trend_items = synthesize_news_trends(news_prefiltered)
@@ -264,7 +264,7 @@ def run(dry_run: bool = False) -> None:
         [i for i in news_scored if i.get("relevance_score", 0) >= haiku_news],
         key=lambda x: x["relevance_score"],
         reverse=True,
-    )[:20]
+    )[:40]
 
     opps_filtered = sorted(
         [i for i in opps_scored if i.get("relevance_score", 0) >= haiku_opp],
