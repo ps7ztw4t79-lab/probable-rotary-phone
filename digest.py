@@ -319,6 +319,10 @@ def run(dry_run: bool = False) -> None:
     else:
         teaser_subject = None  # quiet day subject handled below
 
+    # Save state now — before email build/send — so a crash there doesn't lose
+    # the record of what was fetched and scored today.
+    _update_and_save_state(state, news_raw, opps_raw, high_count, run_dt)
+
     log.info("Step 4/4 — Building email …")
     html = build_email(
         news_items=news_final,
@@ -342,8 +346,6 @@ def run(dry_run: bool = False) -> None:
         print(html)
         log.info("DRY RUN — plain text preview:")
         log.info(plain[:800])
-        # Still save state on dry runs so deduplication works
-        _update_and_save_state(state, news_raw, opps_raw, high_count, run_dt)
         return
 
     log.info("Sending email …")
@@ -366,7 +368,6 @@ def run(dry_run: bool = False) -> None:
         log.error("Failed to send email: %s", exc)
         sys.exit(1)
 
-    _update_and_save_state(state, news_raw, opps_raw, high_count, run_dt)
     log.info("═" * 60)
     log.info("Done.")
 

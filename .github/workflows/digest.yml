@@ -57,7 +57,7 @@ jobs:
           SKIP_DEDUP: ${{ vars.SKIP_DEDUP || 'false' }}
 
       - name: Save deduplication state
-        if: success()
+        if: always()
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
