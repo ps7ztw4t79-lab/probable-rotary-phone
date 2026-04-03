@@ -235,6 +235,8 @@ def build_plain_text(
                 if rc.get("award_amount"):
                     parts.append(f"${rc['award_amount']:,.0f}")
                 lines.append("  " + " | ".join(parts))
+            if rc.get("end_date"):
+                lines.append(f"  Expiration date: {_fmt_date(rc['end_date'])}")
             lines.append(f"  Why we care: {_display_rationale(rc)}")
             if rc.get("recommended_action"):
                 lines.append(f"  Action: {rc['recommended_action']}")
@@ -543,6 +545,7 @@ _TEMPLATE = """<!DOCTYPE html>
             <div style="color:#92400e;font-size:11px;margin-bottom:6px;">
               {% if rc.agency %}{{ rc.agency }}{% endif %}
               {% if rc.award_amount %} &nbsp;&bull;&nbsp; ${{ "{:,.0f}".format(rc.award_amount) }}{% endif %}
+              {% if rc.end_date %} &nbsp;&bull;&nbsp; Expiration date: {{ fmt_date(rc.end_date) }}{% endif %}
             </div>
             <div style="font-size:12px;color:#374151;margin-bottom:5px;">{{ display_rationale(rc) }}</div>
             {% if rc.recommended_action %}
