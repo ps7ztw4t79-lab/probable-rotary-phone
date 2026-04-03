@@ -354,50 +354,50 @@ _TEMPLATE = """<!DOCTYPE html>
                 </td>
                 <td style="padding-right:6px;">
                   <span style="background:{{ sc }};color:#ffffff;font-size:9px;font-weight:bold;
-                               padding:2px 8px;">{{ score_label(opp.relevance_score) }} {{ opp.relevance_score }}</span>
+                               padding:2px 8px;">{{ score_label(item.relevance_score) }} {{ item.relevance_score }}</span>
                 </td>
-                {% if opp.set_aside %}
+                {% if item.set_aside %}
                 <td>
                   <span style="background:#f1f5f9;color:#475569;font-size:9px;
-                               padding:2px 8px;">{{ opp.set_aside }}</span>
+                               padding:2px 8px;">{{ item.set_aside }}</span>
                 </td>
                 {% endif %}
               </tr>
             </table>
             <!-- Title -->
-            <a href="{{ opp.url }}" style="color:#0f1e36;font-size:14px;font-weight:bold;
+            <a href="{{ item.url }}" style="color:#0f1e36;font-size:14px;font-weight:bold;
                        text-decoration:none;line-height:1.4;display:block;margin-bottom:5px;">
-              {{ opp.title | truncate(120) }}
+              {{ item.title | truncate(120) }}
             </a>
             <!-- Meta -->
             <div style="color:#64748b;font-size:11px;margin-bottom:6px;">
-              {% if opp.agency %}{{ opp.agency }}{% endif %}
-              {% if opp.notice_type %} &nbsp;&bull;&nbsp; {{ opp.notice_type }}{% endif %}
-              {% if opp.response_deadline %} &nbsp;&bull;&nbsp;
-                <span style="color:#dc2626;font-weight:bold;">Due {{ fmt_date(opp.response_deadline) }}</span>
+              {% if item.agency %}{{ item.agency }}{% endif %}
+              {% if item.notice_type %} &nbsp;&bull;&nbsp; {{ item.notice_type }}{% endif %}
+              {% if item.response_deadline %} &nbsp;&bull;&nbsp;
+                <span style="color:#dc2626;font-weight:bold;">Due {{ fmt_date(item.response_deadline) }}</span>
               {% endif %}
             </div>
-            <div style="font-size:12px;color:#374151;margin-bottom:5px;">{{ display_rationale(opp) }}</div>
-            {% if opp.recommended_action %}
+            <div style="font-size:12px;color:#374151;margin-bottom:5px;">{{ display_rationale(item) }}</div>
+            {% if item.recommended_action %}
             <div style="font-size:12px;color:#15803d;font-weight:bold;margin-bottom:6px;">
-              &#8594; {{ opp.recommended_action }}
+              &#8594; {{ item.recommended_action }}
             </div>
             {% endif %}
             <!-- Tags + actions row -->
             <table width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
                 <td>
-                  {% for tag in opp.tags[:4] %}
+                  {% for tag in item.tags[:4] %}
                   <span style="display:inline-block;background:#dbeafe;color:#1d4ed8;font-size:10px;
                                padding:2px 7px;margin-right:4px;">{{ tag }}</span>
                   {% endfor %}
                 </td>
                 <td align="right" style="white-space:nowrap;font-size:11px;">
-                  <a href="{{ opp.url }}" style="color:#2563eb;text-decoration:none;font-weight:bold;">View</a>
+                  <a href="{{ item.url }}" style="color:#2563eb;text-decoration:none;font-weight:bold;">View</a>
                   &nbsp;&nbsp;
-                  <a href="{{ opp._feedback_up | safe }}" style="color:#15803d;text-decoration:none;font-weight:bold;">[+]</a>
+                  <a href="{{ item._feedback_up | safe }}" style="color:#15803d;text-decoration:none;font-weight:bold;">[+]</a>
                   &nbsp;
-                  <a href="{{ opp._feedback_down | safe }}" style="color:#9ca3af;text-decoration:none;">[&#8722;]</a>
+                  <a href="{{ item._feedback_down | safe }}" style="color:#9ca3af;text-decoration:none;">[&#8722;]</a>
                 </td>
               </tr>
             </table>
@@ -437,53 +437,53 @@ _TEMPLATE = """<!DOCTYPE html>
                 </td>
                 <td style="padding-right:10px;">
                   <span style="background:{{ sc }};color:#ffffff;font-size:9px;font-weight:bold;
-                               padding:2px 8px;">{{ score_label(item.relevance_score) }} {{ item.relevance_score }}</span>
+                               padding:2px 8px;">{{ score_label(opp.relevance_score) }} {{ opp.relevance_score }}</span>
                 </td>
                 <td>
                   <span style="color:#94a3b8;font-size:11px;">
-                    {{ item.source }}{% if item.published %} &mdash; {{ fmt_date(item.published) }}{% endif %}
+                    {{ opp.source }}{% if opp.published %} &mdash; {{ fmt_date(opp.published) }}{% endif %}
                   </span>
                 </td>
               </tr>
             </table>
             <!-- Headline -->
-            <a href="{{ item.url }}" style="color:#0f1e36;font-size:14px;font-weight:bold;
+            <a href="{{ opp.url }}" style="color:#0f1e36;font-size:14px;font-weight:bold;
                        text-decoration:none;line-height:1.4;display:block;margin-bottom:6px;">
-              {{ item.title | truncate(130) }}
+              {{ opp.title | truncate(130) }}
             </a>
-            <div style="font-size:12px;color:#374151;margin-bottom:5px;">{{ display_rationale(item) }}</div>
-            {% if item.recommended_action %}
+            <div style="font-size:12px;color:#374151;margin-bottom:5px;">{{ display_rationale(opp) }}</div>
+            {% if opp.recommended_action %}
             <div style="font-size:12px;color:#15803d;font-weight:bold;margin-bottom:6px;">
-              &#8594; {{ item.recommended_action }}
+              &#8594; {{ opp.recommended_action }}
             </div>
             {% endif %}
             <!-- Tags + actions row -->
             <table width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
                 <td>
-                  {% for tag in item.tags[:4] %}
+                  {% for tag in opp.tags[:4] %}
                   <span style="display:inline-block;background:#dcfce7;color:#166534;font-size:10px;
                                padding:2px 7px;margin-right:4px;">{{ tag }}</span>
                   {% endfor %}
                 </td>
                 <td align="right" style="white-space:nowrap;font-size:11px;">
-                  <a href="{{ item.url }}" style="color:#2563eb;text-decoration:none;font-weight:bold;">Read</a>
+                  <a href="{{ opp.url }}" style="color:#2563eb;text-decoration:none;font-weight:bold;">Read</a>
                   &nbsp;&nbsp;
-                  <a href="{{ item._feedback_up | safe }}" style="color:#15803d;text-decoration:none;font-weight:bold;">[+]</a>
+                  <a href="{{ opp._feedback_up | safe }}" style="color:#15803d;text-decoration:none;font-weight:bold;">[+]</a>
                   &nbsp;
-                  <a href="{{ item._feedback_down | safe }}" style="color:#9ca3af;text-decoration:none;">[&#8722;]</a>
+                  <a href="{{ opp._feedback_down | safe }}" style="color:#9ca3af;text-decoration:none;">[&#8722;]</a>
                 </td>
               </tr>
             </table>
             <!-- Constituent articles (trend items only) -->
-            {% if item.constituent_titles %}
+            {% if opp.constituent_titles %}
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;">
               <tr>
                 <td style="padding:7px 10px;background:#f1f5f9;">
                   <div style="font-size:10px;color:#64748b;font-weight:bold;margin-bottom:4px;">
-                    BASED ON {{ item.constituent_titles | length }} ARTICLES:
+                    BASED ON {{ opp.constituent_titles | length }} ARTICLES:
                   </div>
-                  {% for title, url in zip(item.constituent_titles, item.constituent_urls) %}
+                  {% for title, url in zip(opp.constituent_titles, opp.constituent_urls) %}
                   <div style="font-size:11px;color:#475569;margin-bottom:2px;">
                     &bull; <a href="{{ url }}" style="color:#2563eb;text-decoration:none;">{{ title | truncate(90) }}</a>
                   </div>
