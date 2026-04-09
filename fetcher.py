@@ -753,7 +753,7 @@ def fetch_sbir_topics() -> list[dict[str, Any]]:
 
 _ENRICH_SCORE_THRESHOLD = 65
 _ENRICH_MAX_ITEMS = 20
-_ENRICH_MAX_CHARS = 2000
+_ENRICH_MAX_CHARS = 3000
 _ENRICH_SKIP_DOMAINS = {"twitter.com", "x.com", "linkedin.com", "facebook.com"}
 
 
