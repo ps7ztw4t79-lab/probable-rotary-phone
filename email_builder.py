@@ -401,6 +401,23 @@ _TEMPLATE = """<!DOCTYPE html>
                 </td>
               </tr>
             </table>
+            <!-- Constituent articles (trend items only) -->
+            {% if item.constituent_titles %}
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;">
+              <tr>
+                <td style="padding:7px 10px;background:#f1f5f9;">
+                  <div style="font-size:10px;color:#64748b;font-weight:bold;margin-bottom:4px;">
+                    BASED ON {{ item.constituent_titles | length }} ARTICLES:
+                  </div>
+                  {% for title, url in zip(item.constituent_titles, item.constituent_urls) %}
+                  <div style="font-size:11px;color:#475569;margin-bottom:2px;">
+                    &bull; <a href="{{ url }}" style="color:#2563eb;text-decoration:none;">{{ title | truncate(90) }}</a>
+                  </div>
+                  {% endfor %}
+                </td>
+              </tr>
+            </table>
+            {% endif %}
           </td>
         </tr>
       </table>

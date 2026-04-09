@@ -278,7 +278,7 @@ def run(dry_run: bool = False) -> None:
     # ── 3. Deep-score top items with Opus ─────────────────────────────────────
     log.info("Step 3/4 — Deep-scoring top leads with Claude Opus …")
     all_scored = news_filtered + opps_filtered
-    all_rescored = rescore_top_items(all_scored, top_n=20)
+    all_rescored = rescore_top_items(all_scored, top_n=60)
     # Opus applies the strict 70 bar via revised scores — filter and separate by type
     news_final = [i for i in all_rescored
                   if i.get("type") == "news" and i.get("relevance_score", 0) >= final_threshold]
