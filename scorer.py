@@ -248,6 +248,11 @@ def _parse_scores(raw: str) -> list[dict]:
         # Drop first and last fence lines
         inner = [l for l in lines[1:] if not l.strip().startswith("```")]
         text = "\n".join(inner).strip()
+    # Extract only the JSON array to handle trailing commentary from the model
+    start = text.find("[")
+    end = text.rfind("]")
+    if start != -1 and end != -1 and end > start:
+        text = text[start : end + 1]
     return json.loads(text)
 
 
@@ -468,7 +473,7 @@ Items:
         client = anthropic.Anthropic(api_key=api_key, timeout=90.0)
         response = client.messages.create(
             model="claude-opus-4-6",
-            max_tokens=3000,
+            max_tokens=4096,
             messages=[{"role": "user", "content": prompt}],
         )
         upgrades = _parse_scores(response.content[0].text)
