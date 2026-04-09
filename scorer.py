@@ -473,7 +473,7 @@ Items:
         client = anthropic.Anthropic(api_key=api_key, timeout=90.0)
         response = client.messages.create(
             model="claude-opus-4-6",
-            max_tokens=4096,
+            max_tokens=10000,
             messages=[{"role": "user", "content": prompt}],
         )
         upgrades = _parse_scores(response.content[0].text)
