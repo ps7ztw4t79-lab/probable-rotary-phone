@@ -434,7 +434,7 @@ def rescore_top_items(
             "score": item.get("relevance_score", 0),
             "lead_type": item.get("lead_type", ""),
             "set_aside": item.get("set_aside", ""),
-            "description": (item.get("description") or item.get("summary", ""))[:400],
+            "description": (item.get("description") or item.get("summary", ""))[:1500],
             "url": item.get("url", ""),
         }
         for i, item in enumerate(top)
