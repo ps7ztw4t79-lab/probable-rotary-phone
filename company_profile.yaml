@@ -11,7 +11,7 @@ company:
   description: >
     An early-stage small business (under $5M revenue, no special set-aside
     designation) headquartered in Huntsville, AL, with staff available in
-    San Diego CA, Dayton OH, and the DC/Northern Virginia/Maryland corridor.
+    Huntsville AL, Dayton OH, and the DC/Northern Virginia/Maryland corridor.
     Core capabilities span: Advanced AI/ML solutions and edge computing;
     firmware/FPGA and signal processing design; intelligence community (IC)
     threat system M&S and Multi-INT exploitation; HEL/directed energy systems
@@ -94,7 +94,6 @@ company:
 
   # Highest-priority named programs — items touching these score maximum
   priority_programs:
-    - TITAN (Tactical Intel Targeting Access Node) — Army AFC ISR ground station
     - HEL-D (High Energy Laser Demonstrator) — Army directed energy
     - DE-MSHORAD (Directed Energy Maneuver SHORAD)
     - Army G-2 ISR Task Force — ACTIVE WORK, recompete to watch
@@ -108,7 +107,7 @@ company:
   # Active prime relationships — these companies bring us onto pursuits BEFORE award
   # If any of these primes win or are rumored to be pursuing something, flag it high
   primary_primes:
-    - name: "Intuitive Research and Technology (IRT / IRTC)"
+    - name: "Intuitive Research and Technology (IRTC)"
       notes: >
         Primary teaming partner. We are invited onto pursuits pre-award — if not
         invited before proposal submission, we are not brought in post-award.
